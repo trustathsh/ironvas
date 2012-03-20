@@ -1,0 +1,68 @@
+ironvas
+=======
+This package contains a *highly experimental* integration of Open Vulnerability
+Assessment System ([OpenVAS][1]) into a MAP-Infrastructure. The integration
+aims to share security related informations (vulnerabilities
+detected by OpenVAS) with other network components in the [TNC architecture][2]
+via IF-MAP.
+
+At the moment only the publish operation for vulnerability information
+is supported. Future enhancements are likely to include more functionality.
+
+
+Requirements
+============
+* Java Runtime Environment 1.6
+
+* OpenVAS-4
+* MAP server implementation (e.g. [irond][3])
+* Maven 3 (only for building from source)
+
+The remaining dependencies should be handled by Maven.
+
+
+Configuration
+=============
+You need to import the OpenVAS and MAP server certificates into `keystore.jks`.
+The remaining configuration parameters can be done through the
+`configuration.properties` file. In general you have to specify:
+
+* the OpenVAS server IP address,
+* the OpenVAS OMP port,
+* the OpenVAS OMP credentials,
+* the MAPS URL and credentials.
+
+
+Building
+========
+To build ironvas from source you can use Maven, simply execute:
+
+	$ mvn package
+
+in the root directory of the project.
+Maven should download all further needed dependencies for you. After a successful
+build you should find the `ironvas-x.x.x.jar` in the `target` subdirectory.
+
+
+Running
+=======
+To run ironvas simply execute:
+
+	$ java -jar ironvas-x.x.x.jar
+
+The amount of logging output can be configured in `logging.properties`.
+	
+	
+TODO Feedback
+=============
+
+TODO LICENSE
+============
+
+
+
+[1]: http://www.openvas.org
+[2]: http://www.trustedcomputinggroup.org/developers/trusted_network_connect
+[3]: https://trust.inform.fh-hannover.de/joomla/index.php/downloads
+
+
