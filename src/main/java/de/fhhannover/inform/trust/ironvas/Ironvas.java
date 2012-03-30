@@ -40,7 +40,9 @@ public class Ironvas {
 		
 		OmpConnection omp = createOmpConnection();
 		
-		Converter converter = createConverter(ssrc.getPublisherId());
+		Converter converter = createConverter(
+				ssrc.getPublisherId(),
+				"openvas@"+ Configuration.get(Configuration.OPENVAS_IP));
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
@@ -133,10 +135,10 @@ public class Ironvas {
 		return omp;
 	}
 	
-	public static Converter createConverter(String publisherId) {
+	public static Converter createConverter(String publisherId, String openvasId) {
 		Converter converter = new FullEventUpdateConverter(
 				publisherId,
-				Configuration.get(Configuration.OPENVAS_ID));
+				openvasId);
 		return converter;
 	}
 	

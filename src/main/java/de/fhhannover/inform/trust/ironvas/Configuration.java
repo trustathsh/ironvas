@@ -32,10 +32,6 @@ public class Configuration {
 	public static final String OPENVAS_OMP_PASSWORD =
 			"openvas.server.omp.password";
 	
-	public static final String OPENVAS_ID =
-			"openvas.server.id";
-	
-	
 	public static final String MAPS_URL_BASIC_AUTH = "ifmap.server.url.basic";
 	public static final String MAPS_URL_CERT_AUTH = "ifmap.server.url.cert";
 
