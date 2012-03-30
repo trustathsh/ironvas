@@ -1,0 +1,27 @@
+# OpenVAS Server ip address
+openvas.server.ip = 127.0.0.1
+
+# OpenVAS Manager port to connect to
+openvas.server.omp.port = 9390
+
+# OpenVAS Manager credentials
+openvas.server.omp.user = admin
+openvas.server.omp.password = ironvas
+
+# IF-MAP connection information
+ifmap.server.url.basic = https://127.0.0.1:8443
+ifmap.server.url.cert = https://127.0.0.1:8444
+ifmap.server.auth.basic.user = test
+ifmap.server.auth.basic.password = test
+
+# the path to the keystore
+keystore.path = /keystore.jks
+
+# the keystore password
+keystore.password = ironvas
+
+# the interval in seconds in which ironvas will fetch the OpenVAS reports
+ironvas.omp.interval = 120
+
+# the interval between two renewSession commands to the MAPS
+ironvas.ifmap.interval = 120
