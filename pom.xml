@@ -14,7 +14,11 @@
 	<name>ironvas</name>
 	<url>http://trust.inform.fh-hannover.de</url>
 	<description>
-		Ironvas is a *highly experimental* integration of Open Vulnerability Assessment System (OpenVAS) into a MAP-Infrastructure. The integration aims to share security related informations (vulnerabilities detected by OpenVAS) with other network components in the TNC architecture via IF-MAP.
+		ironvas is a *highly experimental* integration of Open Vulnerability
+		Assessment System (OpenVAS [1]) into a MAP-Infrastructure. The integration
+		aims to share security related informations (vulnerabilities
+		detected by OpenVAS) with other network components in the TNC architecture [2]
+		via IF-MAP.
 	</description>
 	<organization>
 		<name>Trust@FHH</name>
