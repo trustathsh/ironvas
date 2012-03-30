@@ -1,9 +1,9 @@
 ironvas
 =======
 ironvas is a *highly experimental* integration of Open Vulnerability
-Assessment System (OpenVAS [1]) into a MAP-Infrastructure. The integration
+Assessment System ([OpenVAS] [1]) into a MAP-Infrastructure. The integration
 aims to share security related informations (vulnerabilities
-detected by OpenVAS) with other network components in the TNC architecture [2]
+detected by OpenVAS) with other network components in the [TNC architecture] [2]
 via IF-MAP.
 
 At the moment only the publish operation for vulnerability information
@@ -14,8 +14,8 @@ Requirements
 ============
 * OpenJDK Version 1.6
 * OpenVAS-4
-* MAP server implementation (e.g. irond [3])
-* ifmapj [3]
+* MAP server implementation (e.g. [irond] [3])
+* [ifmapj] [3]
 * Maven 3
 
 The remaining dependencies should be handled by Maven.
@@ -37,11 +37,13 @@ In general you have to specify:
 * the OpenVAS OMP credentials,
 * the MAPS URL and credentials.
 
+Have a look at `src/main/resources/configuration.properties.example`.
+
 
 Building
 ========
-Before you can build ironvas you need to install ifmapj in your local maven
-repository. To do so download ifmapj from the Trust@FHH website [3], unzip it
+Before you can build ironvas you need to install ifmapj in your local Maven
+repository. To do so download ifmapj from the [Trust@FHH website] [3], unzip it
 and execute
 
 	$ mvn install
@@ -66,16 +68,21 @@ To run ironvas simply execute:
 The amount of logging output can be configured in `logging.properties`.
 	
 	
-TODO Feedback
-=============
+Feedback
+========
+If you have any questions, problems or comments, please contact
+	<trust@f4-i.fh-hannover.de>
 
-TODO LICENSE
-============
+
+LICENSE
+=======
+ironvas is licensed under the [Apache License, Version 2.0] [4].
+
 
 
 
 [1]: http://www.openvas.org
 [2]: http://www.trustedcomputinggroup.org/developers/trusted_network_connect
 [3]: https://trust.inform.fh-hannover.de/joomla/index.php/downloads
-
+[4]: http://www.apache.org/licenses/LICENSE-2.0.html
 
