@@ -21,7 +21,6 @@
 
 package de.fhhannover.inform.trust.ironvas.omp
 
-import java.util.logging.Logger
 import java.util.Date
 import java.util.GregorianCalendar
 
@@ -50,8 +49,6 @@ class OmpParser {
      * This means that none of the method in this class will throw an exception
      * because of an non existing element/attribute.
      */
-    
-    val logger = Logger.getLogger(getClass().getName())
     
     def getVersionResponse(xml: Elem) = {
         val statusCode = status(xml)
@@ -162,10 +159,15 @@ class OmpParser {
      * @return a tuple with the status code an the status text
      */
     def status(xml: Elem) = {
-        val status = (xml \ "@status").text.toInt
+        val status = (xml \ "@status").text
         val status_text = (xml \ "@status_text").text
         
-        (status, status_text)
+        if (status == "" || status_text == "") {
+            OmpProtocol.Extensions.parserError
+        }
+        else {
+        	(status.toInt, status_text)
+        }
     }
     
     def status(xmlString: String): (Int, String) = {
@@ -182,7 +184,7 @@ class OmpParser {
      * the default locale is valid for the source of the date string as well as
      * the target.
      * 
-     * If the parsing fails the method returns the current time.
+     * If the parsing fails the method returns January 1, 1970, 00:00:00 GMT.
      * 
      * @param dateString the date to parse
      * @return the <code>Date</code> object
@@ -191,7 +193,6 @@ class OmpParser {
         // Example: "Wed Jun 30 21:49:08 1993"
         
         // TODO construct SimpleDateFormat with correct Locale to get rid of the regex
-        val currentDate = new Date()
         dateString match {
             case dateExtractorRE(month, day, hour, minute, second, year) =>
                 month match {
@@ -208,21 +209,19 @@ class OmpParser {
 	                case "Nov" => new GregorianCalendar(year.toInt, 10, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
 	                case "Dec" => new GregorianCalendar(year.toInt, 11, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
 	                case _ => {
-	                    logger.warning("month '%s' does not match any pattern, falling back to current time".format(month))
-	                    currentDate
+	                    new Date(0)
 	                }
             }
             case _ => {
-                logger.warning("date '%s' does not match the pattern, falling back to current time".format(dateString))
-                currentDate
+                new Date(0)
             }
         }
     }
     
     /**
-     * Parse a cvss_base string to a float number. If the string is empty,
-     * "NONE" or something other that can't be parsed it is interpreted as
-     * <code>0.0f</code>.
+     * Parse a cvss_base string to a float number. If the string is empty or
+     * "NONE" it is interpreted as <code>0.0f</code>.
+     * If the string can't be parsed <code>-1.0f</code> is returned.
      * 
      * @param cvssBase the string to parse
      * @return a float 
@@ -237,8 +236,7 @@ class OmpParser {
             }
         } catch {
             case e: NumberFormatException => {
-                logger.warning("could not parse '" + cvssBase + "'")
-                0.0f
+                -1.0f
             }
         }
     }

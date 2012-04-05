@@ -37,6 +37,10 @@ import scala.xml.Elem
  */
 object OmpProtocol {
     
+    object Extensions {
+        val parserError = (700, "Parser Error")
+    }
+    
     val statusOK = (200, "OK")
     
     def getVersion() = <get_version />

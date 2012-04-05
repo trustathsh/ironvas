@@ -26,16 +26,11 @@ import org.junit.Test
 import org.junit.Before
 import java.util.Calendar
 import org.junit.Ignore
+import org.junit.runner.RunWith
+import org.junit.runners.Suite
 
 class OmpParserTest {
 
-    val datesOk = Map(
-            "Thu Apr 7 16:28:52 2011"  -> (3, 7,  16, 28, 52, 2011),
-            "Tue Aug 25 21:48:25 2009" -> (7, 25, 21, 48, 25, 2009),
-            "Wed Jun 30 21:49:08 1993" -> (5, 30, 21, 49, 8, 1993),
-            "Wed Mar  7 21:27:59 2012" -> (2, 7,  21, 27, 59, 2012)
-            )
-    
     var parser: OmpParser = _
         
     @Before
@@ -44,8 +39,14 @@ class OmpParserTest {
     }
         
     @Test
-    def testParseDate() {
-        for (item <- datesOk) {
+    def testParseDateValidValues() {
+        val dates = Map(
+            "Thu Apr 7 16:28:52 2011"  -> (3, 7,  16, 28, 52, 2011),
+            "Tue Aug 25 21:48:25 2009" -> (7, 25, 21, 48, 25, 2009),
+            "Wed Jun 30 21:49:08 1993" -> (5, 30, 21, 49, 8, 1993),
+            "Wed Mar  7 21:27:59 2012" -> (2, 7,  21, 27, 59, 2012)
+            )
+        for (item <- dates) {
             item match {
                 case (dateString, (month, day, hour, minute, second, year)) => {
                     val date = parser.parseDate(dateString)
@@ -62,21 +63,44 @@ class OmpParserTest {
             }
         }
     }
+    
+    @Test
+    def testParseDateMalformedValues() {
+        val dates = List(
+                "",
+                "somestring",
+                "ThuApr 7 16:28:52 2011", // missing space
+                "Tue Aug 21:48:25 2009", // missing day
+                "Wed Mar  7 21:27:59" // missing year
+                )
+        for (item <- dates) {
+	        val date = parser.parseDate(item)
+	        assertEquals(0, date.getTime())
+        }
+    }
 
     @Test
     def testParseDateEquals() {
         val date1 = parser.parseDate("Thu Apr 7 16:28:52 2011")
         val date2 = parser.parseDate("Thu Apr 7 16:28:52 2011")
-        
         assertEquals(date1, date2)
+        assertEquals(date2, date1)
     }
     
     @Test
-    def testStatus() {
+    def testStatusOK() {
         val response = """<some_command status="200" status_text="OK"/>"""
         val (code, text) = parser.status(response)
         assertEquals(code, 200)
         assertEquals(text, "OK")
+    }
+    
+    @Test
+    def testStatusMissing() {
+        val response = """<some_command />"""
+        val (code, text) = parser.status(response)
+        assertEquals(700, code)
+        assertEquals("Parser Error", text)
     }
     
     @Test
@@ -110,108 +134,37 @@ class OmpParserTest {
     }
     
     @Test
-    def testParseCvssBase() {
+    def testParseCvssBaseValidValues() {
         assertTrue(parser.parseCvssBase("1.0") == 1.0f)
         assertTrue(parser.parseCvssBase("3.5") == 3.5f)
         assertTrue(parser.parseCvssBase("4.2") == 4.2f)
-        assertTrue(parser.parseCvssBase("3.5malformed") == 0.0f)
-        assertTrue(parser.parseCvssBase("") == 0.0f)
     }
+    
+    @Test
+    def testParseCvssBaseMalformedValues() {
+    	assertTrue(parser.parseCvssBase("3.5malformed") == -1.0f)
+    	assertTrue(parser.parseCvssBase("somestring") == -1.0f)
+    }
+    
+    @Test
+    def testParseCvssBaseEmptyValues() {
+    	assertTrue(parser.parseCvssBase("") == 0.0f)
+    	assertTrue(parser.parseCvssBase("None") == 0.0f)
+    }
+    
 }
 
 
 object Responses {
-    val getTask = """
-        
-        """
-        
-    // warning the cross references inside the document are broken (e.g. result_count)
     val getReports = """
     <get_reports_response status="200" status_text="OK">
 	<report id="0197e8aa-ec8f-4150-8d88-bb65f377b097" format_id="d5da9f67-8551-4e51-807b-b6a873d70e34" extension="xml" content_type="text/xml">
 		<report id="0197e8aa-ec8f-4150-8d88-bb65f377b097">
-			<report_format></report_format>
-			<sort>
-				<field>
-					type<order>descending</order>
-				</field>
-			</sort>
-			<filters>
-				hmlgd<phrase></phrase>
-				<notes>0</notes>
-				<overrides>0</overrides>
-				<apply_overrides>0</apply_overrides>
-				<result_hosts_only>1</result_hosts_only>
-				<min_cvss_base></min_cvss_base>
-				<filter>High</filter>
-				<filter>Medium</filter>
-				<filter>Low</filter>
-				<filter>Log</filter>
-				<filter>Debug</filter>
-			</filters>
 			<scan_run_status>Done</scan_run_status>
 			<task id="a620d755-d101-4cf5-96b1-cc3d5b32f021">
 				<name>damnVulnerableScan</name>
 			</task>
 			<scan_start>Thu Apr  7 16:04:40 2011</scan_start>
-			<ports start="1" max="-1">
-				<port>
-					<host>10.0.0.101</host>
-					general/tcp<threat>High</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					general/libpng<threat>Medium</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					general/icmp<threat>Low</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					ssh (22/tcp)<threat>Low</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					tftp (69/udp)<threat>Low</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					general/CPE-T<threat>Log</threat>
-				</port>
-				<port>
-					<host>10.0.0.101</host>
-					general/HOST-T<threat>Log</threat>
-				</port>
-			</ports>
-			<result_count>
-				<full>96</full>
-				<filtered>96</filtered>
-				<debug>
-					<full>0</full>
-					<filtered>0</filtered>
-				</debug>
-				<hole>
-					<full>27</full>
-					<filtered>27</filtered>
-				</hole>
-				<info>
-					<full>34</full>
-					<filtered>34</filtered>
-				</info>
-				<log>
-					<full>5</full>
-					<filtered>5</filtered>
-				</log>
-				<warning>
-					<full>30</full>
-					<filtered>30</filtered>
-				</warning>
-				<false_positive>
-					<full>0</full>
-					<filtered>0</filtered>
-				</false_positive>
-			</result_count>
 			<results start="1" max="-1">
 				<result id="a39b37dd-0fde-4774-b557-30c12df483e6">
 					<subnet>10.0.0.101</subnet>
@@ -367,63 +320,11 @@ object Responses {
    <report id="343435d6-91b0-11de-9478-ffd71f4c6f30" format_id="d5da9f67-8551-4e51-807b-b6a873d70e34" extension="xml" content_type="text/xml">
 		<report id="343435d6-91b0-11de-9478-ffd71f4c6f30">
 			<report_format></report_format>
-			<sort>
-				<field>
-					type<order>descending</order>
-				</field>
-			</sort>
-			<filters>
-				hmlgd<phrase></phrase>
-				<notes>0</notes>
-				<overrides>0</overrides>
-				<apply_overrides>0</apply_overrides>
-				<result_hosts_only>1</result_hosts_only>
-				<min_cvss_base></min_cvss_base>
-				<filter>High</filter>
-				<filter>Medium</filter>
-				<filter>Low</filter>
-				<filter>Log</filter>
-				<filter>Debug</filter>
-			</filters>
 			<scan_run_status>Done</scan_run_status>
 			<task id="343435d6-91b0-11de-9478-ffd71f4c6f29">
 				<name>Example task</name>
 			</task>
 			<scan_start>Tue Aug 25 21:48:25 2009</scan_start>
-			<ports start="1" max="-1">
-				<port>
-					<host>localhost</host>
-					telnet (23/tcp)<threat>Low</threat>
-				</port>
-			</ports>
-			<result_count>
-				<full>1</full>
-				<filtered>1</filtered>
-				<debug>
-					<full>0</full>
-					<filtered>0</filtered>
-				</debug>
-				<hole>
-					<full>0</full>
-					<filtered>0</filtered>
-				</hole>
-				<info>
-					<full>1</full>
-					<filtered>1</filtered>
-				</info>
-				<log>
-					<full>0</full>
-					<filtered>0</filtered>
-				</log>
-				<warning>
-					<full>0</full>
-					<filtered>0</filtered>
-				</warning>
-				<false_positive>
-					<full>0</full>
-					<filtered>0</filtered>
-				</false_positive>
-			</result_count>
 			<results start="1" max="-1">
         <result id="2f502c62-348d-489d-a3ba-9f46b33083a7">
 					<subnet>10.0.0.101</subnet>
