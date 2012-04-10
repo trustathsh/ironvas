@@ -12,24 +12,26 @@ is supported. Future enhancements are likely to include more functionality.
 
 Requirements
 ============
+To use the binary package of ironvas you need the following components:
+
 * OpenJDK Version 1.6
 * OpenVAS-4
 * MAP server implementation (e.g. [irond] [3])
 * [ifmapj] [3]
-* Maven 3
 
-The remaining dependencies should be handled by Maven.
+If you have downloaded the source package and want to build ironvas by
+yourself Maven 3 is also needed.
 
 
 Configuration
 =============
-You need to import the OpenVAS and MAP server certificates into
-`src/main/resources/keystore.jks`.
+To setup the binary package you need to import the OpenVAS and MAP server
+certificates into `keystore.jks`.
 On a Ubuntu installation of OpenVAS you can find the OpenVAS certificate in
 `/var/lib/openvas/CA/servercert.pem`.
 
 The remaining configuration parameters can be done through the
-`src/main/resources/configuration.properties` file in the ironvas package.
+`configuration.properties` file in the ironvas package.
 In general you have to specify:
 
 * the OpenVAS server IP address,
@@ -37,12 +39,13 @@ In general you have to specify:
 * the OpenVAS OMP credentials,
 * the MAPS URL and credentials.
 
-Have a look at `src/main/resources/configuration.properties.example`.
+Have a look at the comments in `configuration.properties` for more details.
 
 
 Building
 ========
-Before you can build ironvas you need to install ifmapj in your local Maven
+Before you can build ironvas (if you have downloaded the source package)
+you need to install ifmapj in your local Maven
 repository. To do so download ifmapj from the [Trust@FHH website] [3], unzip it
 and execute
 
@@ -58,16 +61,25 @@ in the root directory of the ironvas project.
 Maven should download all further needed dependencies for you. After a successful
 build you should find the `ironvas-x.x.x.jar` in the `target` subdirectory.
 
+**Note** that the `package` phase creates a single executable JAR of ironvas. To
+include a `keystore.jks` and a `configuration.properties` in this JAR file place
+both files in `src/main/resources` before executing the `package` phase.
+
+If you want to build a binary package (not a single big JAR) you can do so by
+running the `assembly:assembly` goal instead.
+
 
 Running
 =======
-To run ironvas simply execute:
+To run the binary package of ironvas simply execute:
+
+	$ ./start.sh
+
+The resulting JAR of the `package` phase can be started with:
 
 	$ java -jar ironvas-x.x.x.jar
 
-The amount of logging output can be configured in `logging.properties`.
-	
-	
+
 Feedback
 ========
 If you have any questions, problems or comments, please contact
