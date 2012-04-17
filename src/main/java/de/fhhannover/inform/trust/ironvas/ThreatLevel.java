@@ -3,7 +3,7 @@
  * Package: main.java.de.fhhannover.inform.trust.ironvas
  * File:    ThreatLevel.java
  *
- * Copyright (C) 2011-2012 Fachhochschule Hannover
+ * Copyright (C) 2011-2012 Hochschule Hannover
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
  *
  * Licensed under the Apache License, Version 2.0 (the License);
