@@ -83,6 +83,10 @@
                     				<resource>LICENSE</resource>
                     				<file>LICENSE</file>
                 				</transformer>
+                				<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                    				<resource>NOTICE</resource>
+                    				<file>NOTICE</file>
+                				</transformer>
 							</transformers>
 						</configuration>
 					</execution>

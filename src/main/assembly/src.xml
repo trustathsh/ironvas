@@ -13,6 +13,7 @@
             	<include>src/main/java/</include>
             	<include>src/main/scala/</include>
             	<include>src/main/templates/</include>
+            	<include>src/main/assembly/</include>
             	
             	<include>LICENSE</include>
             	<include>NOTICE</include>
