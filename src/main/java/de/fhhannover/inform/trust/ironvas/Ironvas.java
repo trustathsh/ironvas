@@ -21,6 +21,7 @@
 
 package de.fhhannover.inform.trust.ironvas;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.LogManager;
 
@@ -170,6 +171,13 @@ public class Ironvas {
 			LogManager.getLogManager().readConfiguration(in);
 		} catch (Exception e) {
 			System.err.println("ERROR: unable to read logging configuration!");
+		}
+		finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

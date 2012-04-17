@@ -77,8 +77,8 @@ public class Configuration {
 		logger.info("reading " + CONFIG_FILE + " ...");
 		
 		properties = new Properties();
+		InputStream in = Configuration.class.getResourceAsStream(CONFIG_FILE);
 		try {
-			InputStream in = Configuration.class.getResourceAsStream(CONFIG_FILE);
 			properties.load(in);
 		} catch (FileNotFoundException e) {
 			logger.severe("could not find " + CONFIG_FILE);
@@ -86,6 +86,13 @@ public class Configuration {
 		} catch (IOException e) {
 			logger.severe("error while reading " + CONFIG_FILE);
 			throw new RuntimeException(e.getMessage());
+		}
+		finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
