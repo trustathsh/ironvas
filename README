@@ -26,7 +26,7 @@ yourself Maven 3 is also needed.
 Configuration
 =============
 To setup the binary package you need to import the OpenVAS and MAP server
-certificates into `keystore.jks`.
+certificates into `ironvas.jks`.
 On a Ubuntu installation of OpenVAS you can find the OpenVAS certificate in
 `/var/lib/openvas/CA/servercert.pem`.
 
@@ -62,7 +62,7 @@ Maven should download all further needed dependencies for you. After a successfu
 build you should find the `ironvas-x.x.x.jar` in the `target` subdirectory.
 
 **Note** that the `package` phase creates a single executable JAR of ironvas. To
-include a `keystore.jks` and a `configuration.properties` in this JAR file place
+include a `ironvas.jks` and a `configuration.properties` in this JAR file place
 both files in `src/main/resources` before executing the `package` phase.
 
 If you want to build a binary package (not a single big JAR) you can do so by
