@@ -50,5 +50,8 @@ public interface Converter {
 	
 	public List<PublishElement> toUpdates(Set<Vulnerability> vulnerabilities);
 	public List<PublishElement> toDeletes(Set<Vulnerability> vulnerabilities);
+	
+	public void setPublisherId(String publisherId);
+	public void setOpenVasServerId(String openVasServerId);
 
 }

@@ -30,4 +30,15 @@ public abstract class AbstractConverter implements Converter {
 		this.publisherId = publisherId;
 		this.openVasServerId = openVasServerId;
 	}
+	
+	@Override
+	public void setPublisherId(String publisherId) {
+		this.publisherId = publisherId;
+	}
+	
+	@Override
+	public void setOpenVasServerId(String openVasServerId) {
+		this.openVasServerId = openVasServerId;
+	}
+	
 }
