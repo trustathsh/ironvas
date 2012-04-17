@@ -23,11 +23,14 @@ package de.fhhannover.inform.trust.ironvas.converter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import de.fhhannover.inform.trust.ifmapj.identifier.IpAddress;
+import de.fhhannover.inform.trust.ifmapj.messages.PublishDelete;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishUpdate;
 import de.fhhannover.inform.trust.ironvas.Nvt;
 import de.fhhannover.inform.trust.ironvas.RiskfactorLevel;
@@ -37,21 +40,20 @@ import static org.junit.Assert.*;
 
 public class FullEventUpdateConverterTest {
 	
-	private static final String PUBLISHER_ID = "ironvas";
-	private static final String OPENVAS_SERVER_ID = "openvas@example.test";
-	
 	private FullEventUpdateConverter converter;
+	private SimpleDateFormat format;
+	private Nvt nvt;
+	private Vulnerability v;
+	private Date date;
 	
 	
 	@Before
 	public void setUp() {
-		converter = new FullEventUpdateConverter(PUBLISHER_ID, OPENVAS_SERVER_ID);
-	}
-	
-	@Test
-	public void testSingleUpdate() {
-		SimpleDateFormat format =
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		String publisherId = "ironvas";
+		String openVASId = "openvas@example.test";
+		converter = new FullEventUpdateConverter(publisherId, openVASId);
+		
+		format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
 		
 		String nvt_oid = "1.3.6.1.4.1.25623.1.0.11229";
 		String nvt_name = "phpinfo.php";
@@ -61,41 +63,119 @@ public class FullEventUpdateConverterTest {
 		String bid = "NOBID";
 		
 		String id = "f75673cf-c32a-467b-b495-1eb5fb2de100";
-		Date date = new Date();
+		date = new Date(0);
 		String subnet = "192.168.7.7";
 		String host = "192.168.7.7";
 		String port = "http (80/tcp)";
 		ThreatLevel threat = ThreatLevel.Medium;
 		String description = "";
 		
-		Nvt nvt = new Nvt(nvt_oid, nvt_name, nvt_cvss_base, riskfactor, cve, bid);
-		Vulnerability v = new Vulnerability(id, date, subnet, host, port, threat, description, nvt);
-		
+		nvt = new Nvt(nvt_oid, nvt_name, nvt_cvss_base, riskfactor, cve, bid);
+		v = new Vulnerability(id, date, subnet, host, port, threat, description, nvt);
+	}
+	
+	@Test
+	public void testSingleUpdateMetadataSize() {
+		PublishUpdate u = converter.singleUpdate(v);
+		assertEquals(1, u.getMetadata().size());
+	}
+	
+	@Test
+	public void testSingleUpdateName() {
 		PublishUpdate u = converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
-		
-		assertEquals(1, u.getMetadata().size());
-		assertEquals(nvt_name,
+		assertEquals("phpinfo.php",
 				d.getElementsByTagName("name").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateDiscoveredTime() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals(format.format(date),
 				d.getElementsByTagName("discovered-time").item(0).getTextContent());
-		assertEquals(OPENVAS_SERVER_ID,
+	}
+	
+	@Test
+	public void testSingleUpdateDiscovererId() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
+		assertEquals("openvas@example.test",
 				d.getElementsByTagName("discoverer-id").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateMagnitude() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals("0",
 				d.getElementsByTagName("magnitude").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateConfidence() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals("0",
 				d.getElementsByTagName("confidence").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateSignificance() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals("important",
 				d.getElementsByTagName("significance").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateType() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals("cve",
 				d.getElementsByTagName("type").item(0).getTextContent());
+	}
+	
+	@Test
+	public void testSingleUpdateOtherTypeDefinition() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
 		assertEquals("",
 				d.getElementsByTagName("other-type-definition").item(0).getTextContent());
-		assertEquals(description,
+	}
+	
+	@Test
+	public void testSingleUpdateInformation() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
+		assertEquals("",
 				d.getElementsByTagName("information").item(0).getTextContent());
-		assertEquals(cve,
+	}
+	
+	@Test
+	public void testSingleUpdateVulnerabilityUri() {
+		PublishUpdate u = converter.singleUpdate(v);
+		Document d = u.getMetadata().get(0);
+		assertEquals("NOCVE",
 				d.getElementsByTagName("vulnerability-uri").item(0).getTextContent());
-		
-		
+	}
+	
+	@Test
+	public void testSingleDeleteIpAddress() {
+		PublishDelete d = converter.singleDelete(v);
+		assertEquals("192.168.7.7", ((IpAddress)d.getIdentifier1()).getValue());
+	}
+	
+	@Test
+	public void testSingleDeleteFilter() {
+		PublishDelete d = converter.singleDelete(v);
+		String filter = "meta:event[@ifmap-publisher-id='ironvas' "+
+				"and name='phpinfo.php' "+
+				"and discovered-time='1970-01-01T01:00:00+0100' "+
+				"and discoverer-id='openvas@example.test'"+
+				"and type='cve'"+
+				"and information=''"+
+				"and vulnerability-uri='NOCVE']";
+		assertEquals(filter, d.getFilter());
 	}
 }
