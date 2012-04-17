@@ -88,9 +88,16 @@ class OmpParserTest {
     }
     
     @Test
-    def testStatusOK() {
+    def testStatusOKSingleTag() {
         val response = """<some_command status="200" status_text="OK"/>"""
         val (code, text) = parser.status(response)
+        assertEquals(code, 200)
+        assertEquals(text, "OK")
+    }
+    
+    @Test
+    def testStatusOKDocument() {
+        val (code, text) = parser.status(Responses.getReports)
         assertEquals(code, 200)
         assertEquals(text, "OK")
     }
@@ -117,21 +124,59 @@ class OmpParserTest {
     }
     
     @Test
-    def testGetReportsResponse() {
-        val ((statusCode, statusText), content) =
-            parser.getReportsResponse(Responses.getReports)
+    def testGetReportsResponseElementSize() {
+        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
             
-        assertEquals(statusCode, 200)
-        assertEquals(statusText, "OK")
+        // we expect 2 reports
         assertTrue(content.length == 2)
+        
+        // the first report contains 10 elements
         assertTrue(content.first.length == 10)
         
-        val v = content.first.first
-        assertTrue(v.getId() == "a39b37dd-0fde-4774-b557-30c12df483e6")
-        assertTrue(v.getNvt().getCvss_base() == 7.1f)
-        
-        // TODO
+        // the second report contains 2 elements
+        assertTrue(content.last.length == 2)
     }
+    
+    @Test
+    def testGetReportsResponseVulnerabilityIds() {
+        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+        val lastReport = content.last
+        val ids = List(
+                "2f502c62-348d-489d-a3ba-9f46b33083a7",
+                "3c0c3500-27a2-48b3-8600-22f83f8f923e")
+        val zipped = lastReport.zip(ids)
+        for ((vulnerability, id) <- zipped) {
+        	assertEquals(id, vulnerability.getId())
+        }
+    }
+    // TODO vulnerability.{timestamp, subnet, host, port, threat, description}
+    
+    @Test
+    def testGetReportsResponseNvtOid() {
+        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+        val lastReport = content.last
+        val ids = List(
+                "1.3.6.1.4.1.25623.1.0.900675",
+                "1.3.6.1.4.1.25623.1.0.902401")
+        val zipped = lastReport.zip(ids)
+        for ((vulnerability, id) <- zipped) {
+        	assertEquals(id, vulnerability.getNvt().getOid())
+        }
+    }
+    
+    @Test
+    def testGetReportsResponseNvtName() {
+        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+        val lastReport = content.last
+        val names = List(
+                "Mutt Version Detection",
+                "Adobe Flash Player Remote Memory Corruption Vulnerability (Linux)")
+        val zipped = lastReport.zip(names)
+        for ((vulnerability, name) <- zipped) {
+        	assertEquals(name, vulnerability.getNvt().getName())
+        }
+    }
+    // TODO nvt.{cvss_base, risk_factor, cve, bid}
     
     @Test
     def testParseCvssBaseValidValues() {
