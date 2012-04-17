@@ -23,7 +23,11 @@ package de.fhhannover.inform.trust.ironvas;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.net.ssl.TrustManager;
 
@@ -52,27 +56,57 @@ public class Ironvas {
 		setupLogging();
 		Configuration.init();
 		
-		SSRC ssrc = createIfmapService();
+		// TODO command line parser
+		// overwrite configuration with command line arguments
+
+		// ifmap
+		String ifmapurl     = Configuration.get(Configuration.MAPS_URL_BASIC_AUTH);
+		String ifmapuser    = Configuration.get(Configuration.MAPS_AUTH_BASIC_USER);
+		String ifmappass    = Configuration.get(Configuration.MAPS_AUTH_BASIC_PASSWORD);
+		String ifmapkeypath = Configuration.get(Configuration.KEYSTORE_PATH);
+		String ifmapkeypass = Configuration.get(Configuration.KEYSTORE_PASSWORD);
+
+		// omp
+		String ompip      = Configuration.get(Configuration.OPENVAS_IP);
+		String ompport    = Configuration.get(Configuration.OPENVAS_OMP_PORT);
+		String ompuser    = Configuration.get(Configuration.OPENVAS_OMP_USER);
+		String omppass    = Configuration.get(Configuration.OPENVAS_OMP_PASSWORD);
+		String ompkeypath = Configuration.get(Configuration.KEYSTORE_PATH);
+		String ompkeypass = Configuration.get(Configuration.KEYSTORE_PASSWORD);
+
+		// misc
+		String discovererId    = "openvas@"+ Configuration.get(Configuration.OPENVAS_IP);
+		String publishInterval = Configuration.get(Configuration.OMP_INTERVAL);
+		String ifmapKeepalive  = Configuration.get(Configuration.IFMAP_INTERVAL);
+		
+		
+		// begin initialization ------------------------------------------------
+		
+		// ifmap
+		SSRC ssrc = createIfmapService(ifmapurl, ifmapuser, ifmappass, ifmapkeypath, ifmapkeypass);
 		try {
 			ssrc.newSession();
+			ssrc.purgePublisher();
 		} catch (Exception e) {
 			System.err.println("could not connect to ifmap server: " + e);
 			System.exit(1);
 		}
 		
-		OmpConnection omp = createOmpConnection();
+		// omp
+		OmpConnection omp = createOmpConnection(ompip, ompport, ompuser, omppass, ompkeypath, ompkeypass);
 		
+		// ironvas
 		Converter converter = createConverter(
-				ssrc.getPublisherId(),
-				"openvas@"+ Configuration.get(Configuration.OPENVAS_IP));
+				ssrc.getPublisherId(), discovererId);
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
 		VulnerabilityFetcher fetcher = new VulnerabilityFetcher(
 				handler,
 				omp,
-				Integer.parseInt(Configuration.get(Configuration.OMP_INTERVAL)));
+				Integer.parseInt(publishInterval));
 
+		// threads
 		final Thread handlerThread = new Thread(handler,
 				"handler-thread");
 		final Thread fetcherThread = new Thread(fetcher,
@@ -80,7 +114,7 @@ public class Ironvas {
 		final Thread ssrcKeepaliveThread = new Thread(
 				new Keepalive(
 						ssrc,
-						Integer.parseInt(Configuration.get(Configuration.IFMAP_INTERVAL))),
+						Integer.parseInt(ifmapKeepalive)),
 				"ssrc-keepalive-thread");
 		
 		Runnable interrupter = new Runnable() {
@@ -121,13 +155,8 @@ public class Ironvas {
 		System.exit(0);
 	}
 	
-	public static SSRC createIfmapService() {
+	public static SSRC createIfmapService(String url, String user, String pass, String keypath, String keypass) {
 		SSRC ifmap = null;
-		String url = Configuration.get(Configuration.MAPS_URL_BASIC_AUTH);
-		String user = Configuration.get(Configuration.MAPS_AUTH_BASIC_USER);
-		String pass = Configuration.get(Configuration.MAPS_AUTH_BASIC_PASSWORD);
-		String keypath = Configuration.get(Configuration.KEYSTORE_PATH);
-		String keypass = Configuration.get(Configuration.KEYSTORE_PASSWORD);
 		TrustManager[] tm = null;
 		
 		try {
@@ -146,14 +175,14 @@ public class Ironvas {
 		return ifmap;
 	}
 	
-	public static OmpConnection createOmpConnection() {
+	public static OmpConnection createOmpConnection(String ip, String port, String user, String pass, String keypath, String keypass) {
 		OmpConnection omp = new OmpConnection(
-				Configuration.get(Configuration.OPENVAS_IP), 
-				Integer.parseInt(Configuration.get(Configuration.OPENVAS_OMP_PORT)),
-				Configuration.get(Configuration.OPENVAS_OMP_USER),
-				Configuration.get(Configuration.OPENVAS_OMP_PASSWORD),
-				Configuration.get(Configuration.KEYSTORE_PATH),
-				Configuration.get(Configuration.KEYSTORE_PASSWORD));
+				ip, 
+				Integer.parseInt(port),
+				user,
+				pass,
+				keypath,
+				keypass);
 		return omp;
 	}
 	
@@ -171,12 +200,17 @@ public class Ironvas {
 			LogManager.getLogManager().readConfiguration(in);
 		} catch (Exception e) {
 			System.err.println("ERROR: unable to read logging configuration!");
+			Handler handler = new ConsoleHandler();
+			Logger.getLogger("").addHandler(handler);
+			Logger.getLogger("").setLevel(Level.INFO);
 		}
 		finally {
-			try {
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (in != null) {
+				try {
+						in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
