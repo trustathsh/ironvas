@@ -65,9 +65,40 @@ public class NvtTest {
 		assertFalse(n1Equalsn2.equals(n3));
 	}
 	
+	@Test
 	public void testHashCode() {
 		assertEquals(n1Equalsn2.hashCode(), n2Equalsn1.hashCode());
 		assertFalse(n1Equalsn2.hashCode() == n3.hashCode());
+	}
+	
+	@Test
+	public void testGetOid() {
+		assertEquals("3.3.6.1.4.1.25623.1.0.800615", n3.getOid());
+	}
+	
+	@Test
+	public void testGetName() {
+		assertEquals("Cscope putstring Multiple Buffer Overflow vulnerability", n3.getName());
+	}
+	
+	@Test
+	public void testGetCvss_base() {
+		assertEquals(9.3f, n3.getCvss_base(), 0.00001);
+	}
+	
+	@Test
+	public void testGetRisk_factor() {
+		assertEquals(RiskfactorLevel.Critical, n3.getRisk_factor());
+	}
+	
+	@Test
+	public void testGetCve() {
+		assertEquals("CVE-2009-1577", n3.getCve());
+	}
+	
+	@Test
+	public void testGetBid() {
+		assertEquals("NOBID", n3.getBid());
 	}
 	
 	
