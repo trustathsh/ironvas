@@ -21,6 +21,7 @@
 
 package de.fhhannover.inform.trust.ironvas.ifmap;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
 import de.fhhannover.inform.trust.ifmapj.IfmapJ;
@@ -58,6 +59,10 @@ public class ThreadSafeSsrc implements SSRC {
 	 */
 	public ThreadSafeSsrc(String url, String user, String pass, TrustManager[] tms) throws InitializationException {
 		ssrc = IfmapJ.createSSRC(url, user, pass, tms);
+	}
+	
+	public ThreadSafeSsrc(String url, KeyManager[] kms, TrustManager[] tms) throws InitializationException {
+		ssrc = IfmapJ.createSSRC(url, kms, tms);
 	}
 
 	@Override

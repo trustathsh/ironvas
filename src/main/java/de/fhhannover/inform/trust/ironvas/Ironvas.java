@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
 import de.fhhannover.inform.trust.ifmapj.IfmapJHelper;
@@ -88,6 +89,7 @@ public class Ironvas {
 		SSRC ssrc = createIfmapService(
 				ifmapauthmethod,
 				ifmapurlbasic,
+				ifmapurlcert,
 				ifmapuser,
 				ifmappass,
 				ifmapkeypath,
@@ -163,19 +165,29 @@ public class Ironvas {
 		System.exit(0);
 	}
 	
-	public static SSRC createIfmapService(String authMethod, String url, String user, String pass, String keypath, String keypass) {
+	public static SSRC createIfmapService(String authMethod, String basicUrl, String certUrl, String user, String pass, String keypath, String keypass) {
 		SSRC ifmap = null;
 		TrustManager[] tm = null;
+		KeyManager[] km = null;
 		
 		try {
 			tm = IfmapJHelper.getTrustManagers(Ironvas.class.getResourceAsStream(keypath), keypass);
+			km = IfmapJHelper.getKeyManagers(Ironvas.class.getResourceAsStream(keypath), keypass);
 		} catch (InitializationException e1) {
 			e1.printStackTrace();
 			System.exit(1);
 		}
 		
 		try {
-			ifmap = new ThreadSafeSsrc(url, user, pass, tm);
+			if (authMethod.equals("basic")) {
+				ifmap = new ThreadSafeSsrc(basicUrl, user, pass, tm);
+			}
+			else if (authMethod.equals("cert")) {
+				ifmap = new ThreadSafeSsrc(certUrl, km, tm);
+			}
+			else {
+				throw new IllegalArgumentException("unknown authentication method '"+authMethod+"'");
+			}
 		} catch (InitializationException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -207,7 +219,7 @@ public class Ironvas {
 		try {
 			LogManager.getLogManager().readConfiguration(in);
 		} catch (Exception e) {
-			System.err.println("ERROR: unable to read logging configuration!");
+			System.err.println("could not read " + LOGGING_CONFIG_FILE + ", using defaults");
 			Handler handler = new ConsoleHandler();
 			Logger.getLogger("").addHandler(handler);
 			Logger.getLogger("").setLevel(Level.INFO);
