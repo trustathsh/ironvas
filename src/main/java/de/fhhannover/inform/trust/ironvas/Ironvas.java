@@ -60,30 +60,38 @@ public class Ironvas {
 		// overwrite configuration with command line arguments
 
 		// ifmap
-		String ifmapurl     = Configuration.get(Configuration.MAPS_URL_BASIC_AUTH);
-		String ifmapuser    = Configuration.get(Configuration.MAPS_AUTH_BASIC_USER);
-		String ifmappass    = Configuration.get(Configuration.MAPS_AUTH_BASIC_PASSWORD);
-		String ifmapkeypath = Configuration.get(Configuration.KEYSTORE_PATH);
-		String ifmapkeypass = Configuration.get(Configuration.KEYSTORE_PASSWORD);
+		String ifmapauthmethod = Configuration.get("ifmap.server.auth.method");
+		String ifmapurlbasic = Configuration.get("ifmap.server.url.basic");
+		String ifmapurlcert  = Configuration.get("ifmap.server.url.cert"); 
+		String ifmapuser     = Configuration.get("ifmap.server.auth.basic.user");
+		String ifmappass     = Configuration.get("ifmap.server.auth.basic.password");
+		String ifmapkeypath  = Configuration.get("keystore.path");
+		String ifmapkeypass  = Configuration.get("keystore.password");
 
 		// omp
-		String ompip      = Configuration.get(Configuration.OPENVAS_IP);
-		String ompport    = Configuration.get(Configuration.OPENVAS_OMP_PORT);
-		String ompuser    = Configuration.get(Configuration.OPENVAS_OMP_USER);
-		String omppass    = Configuration.get(Configuration.OPENVAS_OMP_PASSWORD);
-		String ompkeypath = Configuration.get(Configuration.KEYSTORE_PATH);
-		String ompkeypass = Configuration.get(Configuration.KEYSTORE_PASSWORD);
+		String ompip      = Configuration.get("openvas.server.ip");
+		String ompport    = Configuration.get("openvas.server.omp.port");
+		String ompuser    = Configuration.get("openvas.server.omp.user");
+		String omppass    = Configuration.get("openvas.server.omp.password");
+		String ompkeypath = Configuration.get("keystore.path");
+		String ompkeypass = Configuration.get("keystore.password");
 
 		// misc
-		String discovererId    = "openvas@"+ Configuration.get(Configuration.OPENVAS_IP);
-		String publishInterval = Configuration.get(Configuration.OMP_INTERVAL);
-		String ifmapKeepalive  = Configuration.get(Configuration.IFMAP_INTERVAL);
+		String discovererId    = "openvas@"+ ompip;
+		String publishInterval = Configuration.get("ironvas.omp.interval");
+		String ifmapKeepalive  = Configuration.get("ironvas.ifmap.interval");
 		
 		
 		// begin initialization ------------------------------------------------
 		
 		// ifmap
-		SSRC ssrc = createIfmapService(ifmapurl, ifmapuser, ifmappass, ifmapkeypath, ifmapkeypass);
+		SSRC ssrc = createIfmapService(
+				ifmapauthmethod,
+				ifmapurlbasic,
+				ifmapuser,
+				ifmappass,
+				ifmapkeypath,
+				ifmapkeypass);
 		try {
 			ssrc.newSession();
 			ssrc.purgePublisher();
@@ -155,7 +163,7 @@ public class Ironvas {
 		System.exit(0);
 	}
 	
-	public static SSRC createIfmapService(String url, String user, String pass, String keypath, String keypass) {
+	public static SSRC createIfmapService(String authMethod, String url, String user, String pass, String keypath, String keypass) {
 		SSRC ifmap = null;
 		TrustManager[] tm = null;
 		

@@ -44,29 +44,6 @@ public class Configuration {
 	 */
 	private static final String CONFIG_FILE = "/configuration.properties";
 
-	public static final String OPENVAS_IP =
-			"openvas.server.ip";
-	public static final String OPENVAS_OMP_PORT =
-			"openvas.server.omp.port";
-	public static final String OPENVAS_OMP_USER =
-			"openvas.server.omp.user";
-	public static final String OPENVAS_OMP_PASSWORD =
-			"openvas.server.omp.password";
-	
-	public static final String MAPS_URL_BASIC_AUTH = "ifmap.server.url.basic";
-	public static final String MAPS_URL_CERT_AUTH = "ifmap.server.url.cert";
-
-	public static final String MAPS_AUTH_BASIC_USER =
-			"ifmap.server.auth.basic.user";
-	public static final String MAPS_AUTH_BASIC_PASSWORD =
-			"ifmap.server.auth.basic.password";
-	
-	public static final String KEYSTORE_PATH = "keystore.path";
-	public static final String KEYSTORE_PASSWORD = "keystore.password";
-	
-	public static final String OMP_INTERVAL = "ironvas.omp.interval";
-	public static final String IFMAP_INTERVAL = "ironvas.ifmap.interval";
-	
 	private static Properties properties;
 
 	/**
