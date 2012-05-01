@@ -45,6 +45,38 @@ public class Configuration {
 	private static final String CONFIG_FILE = "/configuration.properties";
 
 	private static Properties properties;
+	
+	// begin configuration parameter -------------------------------------------
+
+	private static final String PUBLISHER_ENABLE = "ironvas.publisher.enable";
+	private static final String SUBSCRIBER_ENABLE = "ironvas.subscriber.enable";
+	
+	private static final String IFMAP_AUTH_METHOD = "ifmap.server.auth.method";
+	private static final String IFMAP_URL_BASIC = "ifmap.server.url.basic";
+	private static final String IFMAP_URL_CERT = "ifmap.server.url.cert";
+	private static final String IFMAP_BASIC_USER = "ifmap.server.auth.basic.user";
+	private static final String IFMAP_BASIC_PASSWORD = "ifmap.server.auth.basic.password";
+
+	private static final String KEYSTORE_PATH = "keystore.path";
+	private static final String KEYSTORE_PASSWORD = "keystore.password";
+	
+	private static final String OPENVAS_IP = "openvas.server.ip";
+	private static final String OPENVAS_PORT = "openvas.server.omp.port";
+	private static final String OPENVAS_USER = "openvas.server.omp.user";
+	private static final String OPENVAS_PASSWORD = "openvas.server.omp.password";
+
+	private static final String PUBLISH_INTERVAL = "ironvas.omp.interval";
+	private static final String IFMAP_KEEPALIVE  = "ironvas.ifmap.interval";
+	
+	// publisher
+	private static final String UPDATE_FILTER    = "ironvas.publish.update";
+	private static final String NOTIFY_FILTER    = "ironvas.publish.notify";
+	
+	// subscriber
+	private static final String SUBSCRIBER_PDP = "ironvas.subscriber.pdp";
+	
+	// end configuration parameter ---------------------------------------------
+	
 
 	/**
 	 * Loads the configuration file. Every time this method is called the
@@ -80,11 +112,83 @@ public class Configuration {
 	 * @param key
 	 * @return the value assigned to key or null if the is none
 	 */
-	public static String get(String key) {
+	private static String get(String key) {
 		if (properties == null) {
 			init();
 		}
 		return properties.getProperty(key);
+	}
+	
+	public static String publisherEnable() {
+		return get(PUBLISHER_ENABLE);
+	}
+	
+	public static String subscriberEnable() {
+		return get(SUBSCRIBER_ENABLE);
+	}
+	
+	public static String ifmapAuthMethod() {
+		return get(IFMAP_AUTH_METHOD);
+	}
+	
+	public static String ifmapUrlBasic() {
+		return get(IFMAP_URL_BASIC);
+	}
+	
+	public static String ifmapUrlCert() {
+		return get(IFMAP_URL_CERT);
+	}
+
+	public static String ifmapBasicUser() {
+		return get(IFMAP_BASIC_USER);
+	}
+
+	public static String ifmapBasicPassword() {
+		return get(IFMAP_BASIC_PASSWORD);
+	}
+
+	public static String keyStorePath() {
+		return get(KEYSTORE_PATH);
+	}
+
+	public static String keyStorePassword() {
+		return get(KEYSTORE_PASSWORD);
+	}
+	
+	public static String openvasIP() {
+		return get(OPENVAS_IP);
+	}
+
+	public static String openvasPort() {
+		return get(OPENVAS_PORT);
+	}
+
+	public static String openvasUser() {
+		return get(OPENVAS_USER);
+	}
+	
+	public static String openvasPassword() {
+		return get(OPENVAS_PASSWORD);
+	}
+
+	public static String publishInterval() {
+		return get(PUBLISH_INTERVAL);
+	}
+
+	public static String ifmapKeepalive() {
+		return get(IFMAP_KEEPALIVE);
+	}
+
+	public static String updateFilter() {
+		return get(UPDATE_FILTER);
+	}
+	
+	public static String notifyFilter() {
+		return get(NOTIFY_FILTER);
+	}
+	
+	public static String subscriberPdp() {
+		return get(SUBSCRIBER_PDP);
 	}
 
 }

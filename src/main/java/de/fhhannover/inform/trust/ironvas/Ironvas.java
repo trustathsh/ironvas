@@ -23,6 +23,8 @@ package de.fhhannover.inform.trust.ironvas;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -44,6 +46,7 @@ import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
 import de.fhhannover.inform.trust.ironvas.ifmap.ThreadSafeSsrc;
 import de.fhhannover.inform.trust.ironvas.omp.OmpConnection;
 import de.fhhannover.inform.trust.ironvas.omp.VulnerabilityFetcher;
+import de.fhhannover.inform.trust.ironvas.subscriber.Subscriber;
 
 /**
  * Ironvas is an IF-MAP client which integrates OpenVAS into an IF-MAP
@@ -54,6 +57,8 @@ import de.fhhannover.inform.trust.ironvas.omp.VulnerabilityFetcher;
  */
 public class Ironvas {
 	
+	private static final Logger logger =
+			Logger.getLogger(Ironvas.class.getName());
 	private static final String LOGGING_CONFIG_FILE = "/logging.properties";
 	
 	public static void main(String[] args) {
@@ -63,115 +68,147 @@ public class Ironvas {
 		// TODO command line parser
 		// overwrite configuration with command line arguments
 
-		// ifmap
-		String ifmapauthmethod = Configuration.get("ifmap.server.auth.method");
-		String ifmapurlbasic = Configuration.get("ifmap.server.url.basic");
-		String ifmapurlcert  = Configuration.get("ifmap.server.url.cert"); 
-		String ifmapuser     = Configuration.get("ifmap.server.auth.basic.user");
-		String ifmappass     = Configuration.get("ifmap.server.auth.basic.password");
-		String ifmapkeypath  = Configuration.get("keystore.path");
-		String ifmapkeypass  = Configuration.get("keystore.password");
-
-		// omp
-		String ompip      = Configuration.get("openvas.server.ip");
-		String ompport    = Configuration.get("openvas.server.omp.port");
-		String ompuser    = Configuration.get("openvas.server.omp.user");
-		String omppass    = Configuration.get("openvas.server.omp.password");
-		String ompkeypath = Configuration.get("keystore.path");
-		String ompkeypass = Configuration.get("keystore.password");
-
-		// misc
-		String discovererId    = "openvas@"+ ompip;
-		String publishInterval = Configuration.get("ironvas.omp.interval");
-		String ifmapKeepalive  = Configuration.get("ironvas.ifmap.interval");
-		String filterUpdate    = Configuration.get("ironvas.publish.update");
-		String filterNotify    = Configuration.get("ironvas.publish.notify");
-		
 		
 		// begin initialization ------------------------------------------------
 		
-		// ifmap
-		SSRC ssrc = createIfmapService(
-				ifmapauthmethod,
-				ifmapurlbasic,
-				ifmapurlcert,
-				ifmapuser,
-				ifmappass,
-				ifmapkeypath,
-				ifmapkeypass);
-		try {
-			ssrc.newSession();
-			ssrc.purgePublisher();
-		} catch (Exception e) {
-			System.err.println("could not connect to ifmap server: " + e);
-			System.exit(1);
+		
+		if (Configuration.publisherEnable().equals("false") &&
+				Configuration.subscriberEnable().equals("false")) {
+			logger.warning("nothing to do, shutting down ...");
 		}
-		
-		// omp
-		OmpConnection omp = createOmpConnection(ompip, ompport, ompuser, omppass, ompkeypath, ompkeypass);
-		
-		// ironvas
+		else {
+			ShutdownHook hook = new ShutdownHook();
+			Runtime.getRuntime().addShutdownHook(new Thread(hook));
+			ThreadInterruptionWatcher watcher = new ThreadInterruptionWatcher();
+			
+			SSRC ssrc = initIfmap();
+
+			try {
+				ssrc.newSession();
+				ssrc.purgePublisher();
+			} catch (Exception e) {
+				System.err.println("could not connect to ifmap server: " + e);
+				System.exit(1);
+			}
+			
+			// TODO introduce Executor for thread handling
+			Thread ssrcKeepaliveThread = new Thread(new Keepalive(ssrc,
+							Integer.parseInt(Configuration.ifmapKeepalive())),
+					"ssrc-keepalive-thread");
+			
+			hook.add(ssrcKeepaliveThread);
+			watcher.add(ssrcKeepaliveThread);
+			ssrcKeepaliveThread.start();
+			
+			
+			
+			if (Configuration.publisherEnable().equals("true")) {
+				logger.info("activate publisher ...");
+				runPublisher(ssrc, hook, watcher);
+			}
+			if (Configuration.subscriberEnable().equals("true")) {
+				logger.info("activate subscriber ...");
+				runSubscriber(ssrc, hook, watcher);
+			}
+			
+			watcher.run(); // returns if one thread is not alive anymore
+			hook.run();
+			
+			System.exit(1); // there is no way to exit with 0 at the moment
+		}
+	}
+	
+	/**
+	 * Creates and starts the publisher part of ironvas based on the values
+	 * in {@link Configuration}.
+	 * 
+	 * @param ssrc
+	 * @param hook
+	 * @param watcher
+	 */
+	public static void runPublisher(SSRC ssrc, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
 		Converter converter = createConverter(
-				ssrc.getPublisherId(), discovererId,
-				filterUpdate, filterNotify);
+				ssrc.getPublisherId(), "openvas@" + Configuration.openvasIP(),
+				Configuration.updateFilter(), Configuration.notifyFilter());
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
+		OmpConnection omp = initOmp();
+		
 		VulnerabilityFetcher fetcher = new VulnerabilityFetcher(
 				handler,
 				omp,
-				Integer.parseInt(publishInterval));
+				Integer.parseInt(Configuration.publishInterval()));
 
-		// threads
-		final Thread handlerThread = new Thread(handler,
+		Thread handlerThread = new Thread(handler,
 				"handler-thread");
-		final Thread fetcherThread = new Thread(fetcher,
+		Thread fetcherThread = new Thread(fetcher,
 				"fetcher-thread");
-		final Thread ssrcKeepaliveThread = new Thread(
-				new Keepalive(
-						ssrc,
-						Integer.parseInt(ifmapKeepalive)),
-				"ssrc-keepalive-thread");
 		
-		Runnable interrupter = new Runnable() {
-			public void run() {
-				handlerThread.interrupt();
-				fetcherThread.interrupt();
-				ssrcKeepaliveThread.interrupt();
-			}
-		};
+		hook.add(handlerThread);
+		hook.add(fetcherThread);
 		
-		Runtime.getRuntime().addShutdownHook(new Thread(interrupter));
+		watcher.add(handlerThread);
+		watcher.add(fetcherThread);
 		
-		ssrcKeepaliveThread.start();
 		handlerThread.start();
 		fetcherThread.start();
-
-		while (
-				handlerThread.isAlive() &&
-				fetcherThread.isAlive() &&
-				ssrcKeepaliveThread.isAlive()) {
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// we don't care about this special exception right here
-			}
-		}
-		// interrupt the remaining thread
-		interrupter.run();
-		
-		try {
-			handlerThread.join();
-			fetcherThread.join();
-			ssrcKeepaliveThread.join();
-		} catch (InterruptedException e) {
-			System.err.println("interruped while waiting for termination of worker threads");
-			System.exit(1);
-		}
-		System.exit(0);
 	}
 	
-	public static SSRC createIfmapService(String authMethod, String basicUrl, String certUrl, String user, String pass, String keypath, String keypass) {
+	/**
+	 * Creates and starts the subscriber part of ironvas based on the values
+	 * in {@link Configuration}.
+	 * 
+	 * @param ssrc
+	 * @param hook
+	 * @param watcher
+	 */
+	public static void runSubscriber(SSRC ssrc, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
+		OmpConnection omp = initOmp();
+		Subscriber subscriber = new Subscriber(omp, ssrc, Configuration.subscriberPdp()); // TODO get the PDP id from somewhere else
+		
+		Thread subscriberThread = new Thread(subscriber, "subscriber-thread");
+		
+		hook.add(subscriberThread);
+		watcher.add(subscriberThread);
+		
+		subscriberThread.start();
+	}
+	
+	/**
+	 * Creates a {@link Converter} instance with the given configuration
+	 * parameters.
+	 * 
+	 * @param publisherId
+	 * @param openvasId
+	 * @param filterUpdate
+	 * @param filterNotify
+	 * @return
+	 */
+	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify) {
+		FilterParser parser = new FilterParser();
+		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
+		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
+		
+		Converter converter = new FilterEventUpdateConverter(
+				publisherId, openvasId, updateFilter, notifyFilter);
+		return converter;
+	}
+	
+	/**
+	 * Creates a {@link SSRC} instance with the given configuration
+	 * parameters.
+	 * 
+	 * @param authMethod
+	 * @param basicUrl
+	 * @param certUrl
+	 * @param user
+	 * @param pass
+	 * @param keypath
+	 * @param keypass
+	 * @return
+	 */
+	public static SSRC initIfmap(String authMethod, String basicUrl, String certUrl, String user, String pass, String keypath, String keypass) {
 		SSRC ifmap = null;
 		TrustManager[] tm = null;
 		KeyManager[] km = null;
@@ -201,7 +238,36 @@ public class Ironvas {
 		return ifmap;
 	}
 	
-	public static OmpConnection createOmpConnection(String ip, String port, String user, String pass, String keypath, String keypass) {
+	/**
+	 * Creates a {@link SSRC} instance based on the values in
+	 * {@link Configuration}.
+	 * 
+	 * @return
+	 */
+	public static SSRC initIfmap() {
+		return initIfmap(
+				Configuration.ifmapAuthMethod(),
+				Configuration.ifmapUrlBasic(),
+				Configuration.ifmapUrlCert(),
+				Configuration.ifmapBasicUser(),
+				Configuration.ifmapBasicPassword(),
+				Configuration.keyStorePath(),
+				Configuration.keyStorePassword());
+	}
+
+	/**
+	 * Creates an {@link omp.OmpConnection} instance with the given
+	 * configuration parameters.
+	 * 
+	 * @param ip
+	 * @param port
+	 * @param user
+	 * @param pass
+	 * @param keypath
+	 * @param keypass
+	 * @return
+	 */
+	public static OmpConnection initOmp(String ip, String port, String user, String pass, String keypath, String keypass) {
 		OmpConnection omp = new OmpConnection(
 				ip, 
 				Integer.parseInt(port),
@@ -212,14 +278,20 @@ public class Ironvas {
 		return omp;
 	}
 	
-	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify) {
-		FilterParser parser = new FilterParser();
-		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
-		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
-		
-		Converter converter = new FilterEventUpdateConverter(
-				publisherId, openvasId, updateFilter, notifyFilter);
-		return converter;
+	/**
+	 * Creates an {@link omp.OmpConnection} instane based on the values in
+	 * {@link Configuration}.
+	 * 
+	 * @return
+	 */
+	public static OmpConnection initOmp() {
+		return initOmp(
+				Configuration.openvasIP(),
+				Configuration.openvasPort(),
+				Configuration.openvasUser(),
+				Configuration.openvasPassword(),
+				Configuration.keyStorePath(),
+				Configuration.keyStorePassword());
 	}
 	
 	public static void setupLogging() {
@@ -243,5 +315,37 @@ public class Ironvas {
 			}
 		}
 	}
+}
 
+class ThreadList extends ArrayList<Thread> {}
+
+class ShutdownHook extends ThreadList implements Runnable {
+
+	@Override
+	public void run() {
+		for (Thread t : this) {
+			t.interrupt();
+		}
+	}
+}
+
+class ThreadInterruptionWatcher extends ThreadList implements Runnable {
+
+	@Override
+	public void run() {
+		boolean allAlive = true;
+		while (allAlive) {
+			for (Thread t : this) {
+				if (!t.isAlive()) {
+					allAlive = false;
+				}
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// we don't care about this special exception right here
+			}
+		}
+	}
+	
 }
