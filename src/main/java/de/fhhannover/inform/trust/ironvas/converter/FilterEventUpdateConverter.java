@@ -22,6 +22,7 @@
 package de.fhhannover.inform.trust.ironvas.converter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,22 +42,30 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  */
 public class FilterEventUpdateConverter extends FullEventUpdateConverter {
 	
-	private Map<RiskfactorLevel, Boolean> filterCondition;
+	private Map<RiskfactorLevel, Boolean> filterUpdate;
+	private Map<RiskfactorLevel, Boolean> filterNotify;
 
 	public FilterEventUpdateConverter(
 			String publisherId,
 			String openVasServerId,
-			Map<RiskfactorLevel, Boolean> filterCondition) {
+			Map<RiskfactorLevel, Boolean> filterUpdate,
+			Map<RiskfactorLevel, Boolean> filterNotify) {
 		super(publisherId, openVasServerId);
-		this.filterCondition = filterCondition;
+		this.filterUpdate = new HashMap<RiskfactorLevel, Boolean>(filterUpdate);
+		this.filterNotify = new HashMap<RiskfactorLevel, Boolean>(filterNotify);
 	}
 
 	@Override
 	public List<PublishElement> toUpdates(Set<Vulnerability> vulnerabilities) {
 		List<PublishElement> result = new ArrayList<PublishElement>();
 		for (Vulnerability v : vulnerabilities) {
-			if (filterCondition.get(v.getNvt().getRisk_factor())) {
+			RiskfactorLevel level = v.getNvt().getRisk_factor();
+			
+			if (filterUpdate.get(level)) {
 				result.add(singleUpdate(v));
+			}
+			if (filterNotify.get(level)) {
+				result.add(singleUpdate(v, true));
 			}
 		}
 		return result;
@@ -66,9 +75,13 @@ public class FilterEventUpdateConverter extends FullEventUpdateConverter {
 	public List<PublishElement> toDeletes(Set<Vulnerability> vulnerabilities) {
 		List<PublishElement> result = new ArrayList<PublishElement>();
 		for (Vulnerability v : vulnerabilities) {
-			if (filterCondition.get(v.getNvt().getRisk_factor())) {
+			RiskfactorLevel level = v.getNvt().getRisk_factor();
+			
+			if (filterUpdate.get(level)) {
 				result.add(singleDelete(v));
 			}
+			// we don't need to delete the notifys explicitly, because metadata
+			// will be deleted only based on their content
 		}
 		return result;
 	}

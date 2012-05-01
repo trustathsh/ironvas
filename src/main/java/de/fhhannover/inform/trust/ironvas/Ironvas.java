@@ -23,6 +23,7 @@ package de.fhhannover.inform.trust.ironvas;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -36,6 +37,8 @@ import de.fhhannover.inform.trust.ifmapj.IfmapJHelper;
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
 import de.fhhannover.inform.trust.ifmapj.exception.InitializationException;
 import de.fhhannover.inform.trust.ironvas.converter.Converter;
+import de.fhhannover.inform.trust.ironvas.converter.FilterEventUpdateConverter;
+import de.fhhannover.inform.trust.ironvas.converter.FilterParser;
 import de.fhhannover.inform.trust.ironvas.converter.FullEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
 import de.fhhannover.inform.trust.ironvas.ifmap.ThreadSafeSsrc;
@@ -81,6 +84,8 @@ public class Ironvas {
 		String discovererId    = "openvas@"+ ompip;
 		String publishInterval = Configuration.get("ironvas.omp.interval");
 		String ifmapKeepalive  = Configuration.get("ironvas.ifmap.interval");
+		String filterUpdate    = Configuration.get("ironvas.publish.update");
+		String filterNotify    = Configuration.get("ironvas.publish.notify");
 		
 		
 		// begin initialization ------------------------------------------------
@@ -107,7 +112,8 @@ public class Ironvas {
 		
 		// ironvas
 		Converter converter = createConverter(
-				ssrc.getPublisherId(), discovererId);
+				ssrc.getPublisherId(), discovererId,
+				filterUpdate, filterNotify);
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
@@ -206,10 +212,13 @@ public class Ironvas {
 		return omp;
 	}
 	
-	public static Converter createConverter(String publisherId, String openvasId) {
-		Converter converter = new FullEventUpdateConverter(
-				publisherId,
-				openvasId);
+	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify) {
+		FilterParser parser = new FilterParser();
+		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
+		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
+		
+		Converter converter = new FilterEventUpdateConverter(
+				publisherId, openvasId, updateFilter, notifyFilter);
 		return converter;
 	}
 	

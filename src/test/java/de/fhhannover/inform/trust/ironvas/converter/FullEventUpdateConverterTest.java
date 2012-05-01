@@ -76,13 +76,13 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateMetadataSize() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		assertEquals(1, u.getMetadata().size());
 	}
 	
 	@Test
 	public void testSingleUpdateName() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("phpinfo.php",
 				d.getElementsByTagName("name").item(0).getTextContent());
@@ -90,7 +90,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateDiscoveredTime() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals(format.format(date),
 				d.getElementsByTagName("discovered-time").item(0).getTextContent());
@@ -98,7 +98,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateDiscovererId() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("openvas@example.test",
 				d.getElementsByTagName("discoverer-id").item(0).getTextContent());
@@ -106,7 +106,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateMagnitude() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("0",
 				d.getElementsByTagName("magnitude").item(0).getTextContent());
@@ -114,7 +114,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateConfidence() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("0",
 				d.getElementsByTagName("confidence").item(0).getTextContent());
@@ -122,7 +122,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateSignificance() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("important",
 				d.getElementsByTagName("significance").item(0).getTextContent());
@@ -130,7 +130,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateType() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("cve",
 				d.getElementsByTagName("type").item(0).getTextContent());
@@ -138,7 +138,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateOtherTypeDefinition() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("",
 				d.getElementsByTagName("other-type-definition").item(0).getTextContent());
@@ -146,7 +146,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateInformation() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("",
 				d.getElementsByTagName("information").item(0).getTextContent());
@@ -154,7 +154,7 @@ public class FullEventUpdateConverterTest {
 	
 	@Test
 	public void testSingleUpdateVulnerabilityUri() {
-		PublishUpdate u = converter.singleUpdate(v);
+		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
 		assertEquals("NOCVE",
 				d.getElementsByTagName("vulnerability-uri").item(0).getTextContent());

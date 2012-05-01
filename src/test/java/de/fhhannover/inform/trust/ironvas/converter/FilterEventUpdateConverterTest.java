@@ -21,12 +21,10 @@
 
 package de.fhhannover.inform.trust.ironvas.converter;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,44 +41,139 @@ import static org.junit.Assert.*;
 
 public class FilterEventUpdateConverterTest {
 	
-	private FilterEventUpdateConverter converter;
-	
-	private Vulnerability high;
-	private Vulnerability critical;
+	private Set<Vulnerability> vulnerabilities;
 	
 	@Before
 	public void setUp() {
-		Map<RiskfactorLevel, Boolean> filterCondition =
-				new HashMap<RiskfactorLevel, Boolean>();
-		filterCondition.put(RiskfactorLevel.Unknown, false);
-		filterCondition.put(RiskfactorLevel.None, false);
-		filterCondition.put(RiskfactorLevel.Low, false);
-		filterCondition.put(RiskfactorLevel.Medium, false);
-		filterCondition.put(RiskfactorLevel.High, false);
-		filterCondition.put(RiskfactorLevel.Critical, true);
-		
-		
-		String publisherId = "ironvas";
-		String openVASId = "openvas@example.test";
-		converter = new FilterEventUpdateConverter(
-				publisherId,
-				openVASId,
-				filterCondition);
-		
-		high = new Vulnerability("", new Date(0), "", "", "", ThreatLevel.High, "",
-				new Nvt("", "", 0.0f, RiskfactorLevel.High, "", ""));
-		critical = new Vulnerability("", new Date(0), "", "", "", ThreatLevel.High, "",
-				new Nvt("", "", 0.0f, RiskfactorLevel.Critical, "", ""));
+		vulnerabilities = new HashSet<Vulnerability>();
+		vulnerabilities.add(
+				new Vulnerability("", new Date(0), "", "", "", ThreatLevel.High, "",
+						new Nvt("", "", 0.0f, RiskfactorLevel.High, "", "")));
+		vulnerabilities.add(
+				new Vulnerability("", new Date(0), "", "", "", ThreatLevel.High, "",
+						new Nvt("", "", 0.0f, RiskfactorLevel.Critical, "", "")));
 	}
 	
 	@Test
-	public void testToUpdateSize() {
-		Set<Vulnerability> vulnerabilities = new HashSet<Vulnerability>();
-		vulnerabilities.add(critical);
-		vulnerabilities.add(high);
+	public void testToUpdateSizeFilterNothing() {
+		Map<RiskfactorLevel, Boolean> filterUpdate =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterUpdate.put(r, false);
+		}
 		
+		Map<RiskfactorLevel, Boolean> filterNotify =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterNotify.put(r, false);
+		}
+		
+		FilterEventUpdateConverter converter =
+				new FilterEventUpdateConverter(
+						"publisher-id", "openvas",
+						filterUpdate, filterNotify);
 		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
-		assertEquals(1, publish.size());
+		assertEquals(0, publish.size());
+	}
+	
+	@Test
+	public void testToUpdateSizeFilterOnlyNotify() {
+		Map<RiskfactorLevel, Boolean> filterUpdate =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterUpdate.put(r, false);
+		}
+		
+		Map<RiskfactorLevel, Boolean> filterNotify =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterNotify.put(r, true);
+		}
+		
+		FilterEventUpdateConverter converter =
+				new FilterEventUpdateConverter(
+						"publisher-id", "openvas",
+						filterUpdate, filterNotify);
+		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
+		assertEquals(2, publish.size());
+	}
+	
+	@Test
+	public void testToUpdateSizeFilterOnlyUpdate() {
+		Map<RiskfactorLevel, Boolean> filterUpdate =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterUpdate.put(r, true);
+		}
+		
+		Map<RiskfactorLevel, Boolean> filterNotify =
+				new HashMap<RiskfactorLevel, Boolean>();
+		for (RiskfactorLevel r : RiskfactorLevel.values()) {
+			filterNotify.put(r, false);
+		}
+		
+		FilterEventUpdateConverter converter =
+				new FilterEventUpdateConverter(
+						"publisher-id", "openvas",
+						filterUpdate, filterNotify);
+		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
+		assertEquals(2, publish.size());
+	}
+	
+	@Test
+	public void testToUpdateSizeFilterMixed() {
+		Map<RiskfactorLevel, Boolean> filterUpdate =
+				new HashMap<RiskfactorLevel, Boolean>();
+		filterUpdate.put(RiskfactorLevel.Unknown, false);
+		filterUpdate.put(RiskfactorLevel.None, false);
+		filterUpdate.put(RiskfactorLevel.Low, false);
+		filterUpdate.put(RiskfactorLevel.Medium, false);
+		filterUpdate.put(RiskfactorLevel.High, true);
+		filterUpdate.put(RiskfactorLevel.Critical, true);
+		
+		Map<RiskfactorLevel, Boolean> filterNotify =
+				new HashMap<RiskfactorLevel, Boolean>();
+		filterNotify.put(RiskfactorLevel.Unknown, false);
+		filterNotify.put(RiskfactorLevel.None, false);
+		filterNotify.put(RiskfactorLevel.Low, false);
+		filterNotify.put(RiskfactorLevel.Medium, false);
+		filterNotify.put(RiskfactorLevel.High, false);
+		filterNotify.put(RiskfactorLevel.Critical, true);
+		
+		FilterEventUpdateConverter converter =
+				new FilterEventUpdateConverter(
+						"publisher-id", "openvas",
+						filterUpdate, filterNotify);
+		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
+		assertEquals(3, publish.size());
+	}
+	
+	@Test
+	public void testToDeleteSize() {
+		Map<RiskfactorLevel, Boolean> filterUpdate =
+				new HashMap<RiskfactorLevel, Boolean>();
+		filterUpdate.put(RiskfactorLevel.Unknown, false);
+		filterUpdate.put(RiskfactorLevel.None, false);
+		filterUpdate.put(RiskfactorLevel.Low, false);
+		filterUpdate.put(RiskfactorLevel.Medium, false);
+		filterUpdate.put(RiskfactorLevel.High, true);
+		filterUpdate.put(RiskfactorLevel.Critical, true);
+		
+		Map<RiskfactorLevel, Boolean> filterNotify =
+				new HashMap<RiskfactorLevel, Boolean>();
+		filterNotify.put(RiskfactorLevel.Unknown, false);
+		filterNotify.put(RiskfactorLevel.None, false);
+		filterNotify.put(RiskfactorLevel.Low, false);
+		filterNotify.put(RiskfactorLevel.Medium, false);
+		filterNotify.put(RiskfactorLevel.High, false);
+		filterNotify.put(RiskfactorLevel.Critical, true);
+		
+		FilterEventUpdateConverter converter =
+				new FilterEventUpdateConverter(
+						"publisher-id", "openvas",
+						filterUpdate, filterNotify);
+		List<PublishElement> publish = converter.toDeletes(vulnerabilities);
+		assertEquals(2, publish.size());
 	}
 
 }

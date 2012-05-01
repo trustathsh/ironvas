@@ -34,6 +34,7 @@ import de.fhhannover.inform.trust.ifmapj.identifier.Identifiers;
 import de.fhhannover.inform.trust.ifmapj.identifier.IpAddress;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishDelete;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishElement;
+import de.fhhannover.inform.trust.ifmapj.messages.PublishNotify;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishUpdate;
 import de.fhhannover.inform.trust.ifmapj.messages.Requests;
 import de.fhhannover.inform.trust.ifmapj.metadata.EventType;
@@ -62,9 +63,7 @@ public class FullEventUpdateConverter extends AbstractConverter {
 		super(publisherId, openVasServerId);
 	}
 	
-	public PublishUpdate singleUpdate(Vulnerability v) {
-		PublishUpdate update = Requests.createPublishUpdate();
-		
+	public PublishElement singleUpdate(Vulnerability v, boolean isNotify) {
 		IpAddress ip = Identifiers.createIp4(v.getHost());
 		Document metadata = metadataFactory.createEvent(
 				v.getNvt().getName(), // name
@@ -78,12 +77,25 @@ public class FullEventUpdateConverter extends AbstractConverter {
 				v.getDescription(), // information
 				v.getNvt().getCve() // vulnerability-uri
 				);
-
 		
-		update.setIdentifier1(ip);
-		update.addMetadata(metadata);
-		
-		return update;
+		if (isNotify) {
+			PublishNotify notify = Requests.createPublishNotify();
+			notify.setIdentifier1(ip);
+			notify.addMetadata(metadata);
+			
+			return notify;
+		}
+		else {
+			PublishUpdate update = Requests.createPublishUpdate();
+			update.setIdentifier1(ip);
+			update.addMetadata(metadata);
+			
+			return update;
+		}
+	}
+	
+	public PublishElement singleUpdate(Vulnerability v) {
+		return singleUpdate(v, false);
 	}
 	
 	public PublishDelete singleDelete(Vulnerability v) {
