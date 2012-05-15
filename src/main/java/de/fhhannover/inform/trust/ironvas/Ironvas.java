@@ -80,7 +80,7 @@ public class Ironvas {
 			ShutdownHook hook = new ShutdownHook();
 			Runtime.getRuntime().addShutdownHook(new Thread(hook));
 			ThreadInterruptionWatcher watcher = new ThreadInterruptionWatcher();
-			
+
 			SSRC ssrc = initIfmap();
 
 			try {
@@ -165,7 +165,12 @@ public class Ironvas {
 	 */
 	public static void runSubscriber(SSRC ssrc, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
 		OmpConnection omp = initOmp();
-		Subscriber subscriber = new Subscriber(omp, ssrc, Configuration.subscriberPdp()); // TODO get the PDP id from somewhere else
+		Subscriber subscriber = new Subscriber(
+				omp,
+				ssrc,
+				Configuration.subscriberPdp(),
+				Configuration.subscriberTargetNamePrefix(),
+				Configuration.subscriberConfig());
 		
 		Thread subscriberThread = new Thread(subscriber, "subscriber-thread");
 		
@@ -220,7 +225,7 @@ public class Ironvas {
 			e1.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		try {
 			if (authMethod.equals("basic")) {
 				ifmap = new ThreadSafeSsrc(basicUrl, user, pass, tm);

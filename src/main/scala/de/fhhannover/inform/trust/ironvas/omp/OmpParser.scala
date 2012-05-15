@@ -81,7 +81,7 @@ class OmpParser {
         val statusCode = status(xml)
         
                     // iterate over all tasks elements in the document
-        val tasks = for { task <- (xml \ "task")
+        val tasks = for { task <- (xml \ "task" )
             
         		id = (task \ "@id").text
         		name = (task \ "name").text
@@ -173,6 +173,47 @@ class OmpParser {
     def status(xmlString: String): (Int, String) = {
         val xml = XML.loadString(xmlString)
         status(xml)
+    }
+    
+    /**
+     * Parse the response from a create_target request.
+     * 
+     * @param xml the XML to parse
+     * @return a tuple with status information and the id of the created target 
+     */
+    def createTargetResponse(xml: Elem) = {
+    	val statusCode = status(xml)
+    	val targetId = (xml \ "@id").text
+    	
+    	(statusCode, targetId)
+    }
+    
+    def createTargetResponse(xmlString: String): ((Int, String), String) = {
+    	val xml = XML.loadString(xmlString)
+    	createTargetResponse(xml)
+    }
+    
+    /**
+     * Parse the response from a get_targets request.
+     * 
+     * @param xml the XML to parse
+     * @return a tuple with status information and a sequence of targets
+     */
+    def getTargetsResponse(xml: Elem) = {
+    	val statusCode = status(xml)
+    	val targets = for { target <- (xml \ "target") 
+    	  
+    		id = (target \ "@id").text
+    		name = (target  \ "name").text
+    		hosts = (target \ "hosts").text
+    	} yield Target(id, name, hosts)
+    	
+    	(statusCode, targets)
+    }
+    
+    def getTargetResponse(xmlString: String): ((Int, String), Seq[Target]) = {
+      val xml = XML.loadString(xmlString)
+      getTargetsResponse(xml)
     }
     
     

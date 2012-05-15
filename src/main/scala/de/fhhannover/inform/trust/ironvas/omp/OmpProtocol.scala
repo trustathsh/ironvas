@@ -60,4 +60,17 @@ object OmpProtocol {
     def getReports() = <get_reports/>
         
     def getReports(id: String) = <get_reports report_id={id} />
+    
+    def createTarget(name: String, host: String) = {
+    	val xml =	<create_target>
+    					<name>{name}</name>
+    					<hosts>{host}</hosts>
+    				</create_target>
+    	trim(xml)
+    }
+    
+    def deleteTarget(id: String) = <delete_target target_id={id} />
+    
+    def getTargets() = <get_targets/>
+    
 }

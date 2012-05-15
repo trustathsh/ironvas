@@ -116,6 +116,42 @@ class OmpConnection(
     }
     
     /**
+     * Sends the delete_target request for the given target id.
+     * 
+     * @param id the target to delete
+     * @returns a tuple with status informations
+     */
+    def deleteTarget(id: String) = {
+    	val request = OmpProtocol.deleteTarget(id).toString
+    	val response = executeRequest(request)
+    	ompParser.status(response)
+    }
+    
+    /**
+     * Sends the create_target request.
+     * 
+     * @param name the name of the new target
+     * @param host the host (list) for the new target
+     * @returns a tuple with status information and the id of the created target
+     */
+    def createTarget(name: String, host: String) = {
+    	val request = OmpProtocol.createTarget(name, host).toString
+    	val response = executeRequest(request)
+    	ompParser.createTargetResponse(response)
+    }
+    
+    /**
+     * Sends the get_targets request.
+     * 
+     * @returns a tuple with status information and the list of targets
+     */
+    def getTargets() = {
+    	val request = OmpProtocol.getTargets().toString
+    	val response = executeRequest(request)
+    	ompParser.getTargetResponse(response)
+    }
+    
+    /**
      * Sends the get_reports request.
      * 
      * @param id the id of the report to get, if not given all reports are fetched
