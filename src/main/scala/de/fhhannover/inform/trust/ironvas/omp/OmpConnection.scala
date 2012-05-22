@@ -181,6 +181,45 @@ class OmpConnection(
     }
     
     /**
+     * Sends the create_task request.
+     * 
+     * @param name     the name of the new task
+     * @param configId the id of the task configuration
+     * @param targetId the id of the task target
+     * @return a tuple with status information and the id of the created task
+     */
+    def createTask(name: String, configId: String, targetId: String) = {
+    	val request = OmpProtocol.createTask(name, configId, targetId).toString
+    	val response = executeRequest(request)
+    	ompParser.createTaskResponse(response)
+    }
+    
+    
+    /**
+     * Sends the delete_task request.
+     * 
+     * @param id the task id of the task to be deleted
+     * @return a tuple with status information
+     */
+    def deleteTask(id: String) = {
+    	val request = OmpProtocol.deleteTask(id).toString
+    	val response = executeRequest(request)
+    	ompParser.status(response)
+    }
+    
+    /**
+     * Sends the start_task request.
+     * 
+     * @param id the task id of the task to be started
+     * @return a tuple with status information
+     */
+    def startTask(id: String) = {
+    	val request = OmpProtocol.startTask(id).toString
+    	val response = executeRequest(request)
+    	ompParser.status(response)
+    }
+    
+    /**
      * Establish the TCP connection to the OMP server.
      * 
      * @return a new <code>Connection</code> object

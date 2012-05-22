@@ -201,6 +201,65 @@ class OmpParserTest {
 
 
 object Responses {
+  val getTargets = """
+<get_targets_response status="200" status_text="OK">
+  <target id="b493b7a8-7489-11df-a3ec-002264764cea">
+    <name>Localhost</name>
+    <hosts>localhost</hosts>
+    <max_hosts>1</max_hosts>
+    <comment></comment>
+    <in_use>1</in_use>
+    <port_range></port_range>
+    <ssh_lsc_credential id="">
+      <name></name>
+    </ssh_lsc_credential>
+    <smb_lsc_credential id="">
+      <name></name>
+    </smb_lsc_credential>
+    <tasks></tasks>
+  </target>
+  <target id="a63d8644-10b7-4af1-88aa-b32ba2c114db">
+    <name>DVL host</name>
+    <hosts>10.0.0.7</hosts>
+    <max_hosts>1</max_hosts>
+    <comment></comment>
+    <in_use>1</in_use>
+    <port_range>default</port_range>
+    <ssh_lsc_credential id="ffc27f6c-474f-4890-8234-536f1bbd9b45">
+      <name>DVL root</name>
+    </ssh_lsc_credential>
+    <smb_lsc_credential id="">
+      <name></name>
+    </smb_lsc_credential>
+    <tasks>
+      <task id="1c3137b3-b2ef-420c-9527-a4e3a357e68f">
+        <name>ironvas task</name>
+      </task>
+    </tasks>
+  </target>
+  <target id="d37508a1-8941-4000-96ac-f59a26eef23a">
+    <name>ironvas:10.1.1.1</name>
+    <hosts>10.1.1.1</hosts>
+    <max_hosts>1</max_hosts>
+    <comment></comment>
+    <in_use>1</in_use>
+    <port_range>default</port_range>
+    <ssh_lsc_credential id="">
+      <name></name>
+    </ssh_lsc_credential>
+    <smb_lsc_credential id="">
+      <name></name>
+    </smb_lsc_credential>
+    <tasks>
+      <task id="cb3ecd33-7d38-4418-a2b7-ba34e969c896">
+        <name>ironvas:10.1.1.1</name>
+      </task>
+    </tasks>
+  </target>
+</get_targets_response>
+    """
+  
+  
     val getReports = """
     <get_reports_response status="200" status_text="OK">
 	<report id="0197e8aa-ec8f-4150-8d88-bb65f377b097" format_id="d5da9f67-8551-4e51-807b-b6a873d70e34" extension="xml" content_type="text/xml">

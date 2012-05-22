@@ -206,7 +206,13 @@ class OmpParser {
     		id = (target \ "@id").text
     		name = (target  \ "name").text
     		hosts = (target \ "hosts").text
-    	} yield Target(id, name, hosts)
+    		
+    		tasks = for { task <- (target \ "tasks" \ "task")
+    			id = (task \ "@id").text
+    			name = (task \ "name").text
+    		} yield Task(id, name, "")
+    		
+    	} yield Target(id, name, hosts, tasks)
     	
     	(statusCode, targets)
     }
@@ -235,6 +241,23 @@ class OmpParser {
     def getConfigsResponse(xmlString: String): ((Int, String), Seq[Config]) = {
     	val xml = XML.loadString(xmlString)
     	getConfigsResponse(xml)
+    }
+    
+    /**
+     * Parse the response from a create_task request.
+     * 
+     * @return a tuple with status information and the task id of the created task
+     */
+    def createTaskResponse(xml: Elem) = {
+    	val statusCode = status(xml)
+    	val taskId = (xml \ "@id").text
+    	
+    	(statusCode, taskId)
+    }
+    
+    def createTaskResponse(xmlString: String): ((Int, String), String) = {
+    	val xml = XML.loadString(xmlString)
+    	createTaskResponse(xml)
     }
     
     

@@ -74,7 +74,7 @@ public class Configuration {
 	
 	// subscriber
 	private static final String SUBSCRIBER_PDP = "ironvas.subscriber.pdp";
-	private static final String SUBSCRIBER_TARGET_NAME_PREFIX = "ironvas.subscriber.targetNamePrefix";
+	private static final String SUBSCRIBER_NAME_PREFIX = "ironvas.subscriber.namePrefix";
 	private static final String SUBSCRIBER_CONFIG = "ironvas.subscriber.config";
 	
 	// end configuration parameter ---------------------------------------------
@@ -193,8 +193,8 @@ public class Configuration {
 		return get(SUBSCRIBER_PDP);
 	}
 	
-	public static String subscriberTargetNamePrefix() {
-		return get(SUBSCRIBER_TARGET_NAME_PREFIX);
+	public static String subscriberNamePrefix() {
+		return get(SUBSCRIBER_NAME_PREFIX);
 	}
 	
 	public static String subscriberConfig() {

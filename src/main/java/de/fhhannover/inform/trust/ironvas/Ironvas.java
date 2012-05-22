@@ -24,7 +24,6 @@ package de.fhhannover.inform.trust.ironvas;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -41,7 +40,6 @@ import de.fhhannover.inform.trust.ifmapj.exception.InitializationException;
 import de.fhhannover.inform.trust.ironvas.converter.Converter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterParser;
-import de.fhhannover.inform.trust.ironvas.converter.FullEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
 import de.fhhannover.inform.trust.ironvas.ifmap.ThreadSafeSsrc;
 import de.fhhannover.inform.trust.ironvas.omp.OmpConnection;
@@ -169,7 +167,7 @@ public class Ironvas {
 				omp,
 				ssrc,
 				Configuration.subscriberPdp(),
-				Configuration.subscriberTargetNamePrefix(),
+				Configuration.subscriberNamePrefix(),
 				Configuration.subscriberConfig());
 		
 		Thread subscriberThread = new Thread(subscriber, "subscriber-thread");

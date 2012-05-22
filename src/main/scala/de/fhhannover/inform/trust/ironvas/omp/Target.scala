@@ -1,3 +1,8 @@
 package de.fhhannover.inform.trust.ironvas.omp
 
-case class Target(id: String, name: String, hosts: String)
+case class Target(
+    id: String,
+    name: String,
+    hosts: String,
+    tasks: Seq[Task]
+)

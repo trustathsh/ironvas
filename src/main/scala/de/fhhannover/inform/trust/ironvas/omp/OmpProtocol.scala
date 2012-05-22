@@ -71,8 +71,21 @@ object OmpProtocol {
     
     def deleteTarget(id: String) = <delete_target target_id={id} />
     
-    def getTargets() = <get_targets/>
+    def getTargets() = <get_targets tasks="1"/>
       
     def getConfigs() = <get_configs/>
+      
+    def createTask(name: String, configId: String, targetId: String) = {
+    	val xml =	<create_task>
+    					<name>{name}</name>
+    					<config id={configId} />
+    					<target id={targetId} />
+    				</create_task>
+    	trim(xml)
+    }
+    
+    def deleteTask(id: String) = <delete_task task_id={id} />
+    
+    def startTask(id: String) = <start_task task_id={id} />
     
 }

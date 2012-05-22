@@ -22,12 +22,10 @@
 package de.fhhannover.inform.trust.ironvas.subscriber
 
 import java.util.logging.Logger
-
 import scala.collection.JavaConversions.asBuffer
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Map
-
 import de.fhhannover.inform.trust.ifmapj.binding.IfmapStrings
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC
 import de.fhhannover.inform.trust.ifmapj.identifier.Identifiers
@@ -37,6 +35,8 @@ import de.fhhannover.inform.trust.ifmapj.messages.ResultItem
 import de.fhhannover.inform.trust.ifmapj.messages.SearchResult
 import de.fhhannover.inform.trust.ironvas.omp.OmpConnection
 import de.fhhannover.inform.trust.ironvas.omp.Target
+import de.fhhannover.inform.trust.ironvas.omp.Config
+import de.fhhannover.inform.trust.ironvas.omp.Task
 
 /**
  * This subscriber implementation watches the metadata graph for
@@ -50,19 +50,22 @@ import de.fhhannover.inform.trust.ironvas.omp.Target
  *                         OpenVAS server
  * @param ssrc             this SSRC is used to communicate with the MAPS
  * @param pdp              the PDP identifier to subscribe for
- * @param targetNamePrefix this prefix is used for the OpenVAS target names
- * @param config           the name of the OpenVAS configuration which will be
+ * @param namePrefix       this prefix is used for the OpenVAS target/task names
+ * @param configName       the name of the OpenVAS configuration which will be
  *                         used for new tasks
  */
 class Subscriber(
     val omp: OmpConnection, 
     val ssrc: SSRC,
     val pdp: String,
-    val targetNamePrefix: String,
-    val config: String) extends Runnable {
+    val namePrefix: String,
+    val configName: String) extends Runnable {
   
 	private val cache = new HashMap[String, Target]
+	
 	private val logger = Logger.getLogger(getClass().getName())
+	
+	private var config: Config = _
 	
 	/**
 	 * The following steps are performed:<br/>
@@ -77,15 +80,23 @@ class Subscriber(
 
 		val (status, currentConfigs) = omp.getConfigs()
 		
-		if (!currentConfigs.exists {c => c.name == config}) {
-			logger.warning("no config '%s' found, subscriber shutting down ...".format(config))
-			return
+		val targetConfig = currentConfigs.find {c => c.name == configName}
+		
+		targetConfig match {
+		  case Some(c) => config = c
+		  case None => {
+			  logger.warning("no config '%s' found, subscriber shutting down ...".format(configName))
+			  return
+		  }
 		}
+		
 		try {
 			searchForExistingTargets()
 		  
         	subscribe()
 	        while (!Thread.currentThread().isInterrupted()) {
+	        	logger.info("polling for targets ...")
+	          
 	        	val updates = poll()
 	        	
 	        	if (updates.getResults().size() > 0) {
@@ -136,9 +147,16 @@ class Subscriber(
 		  if (!cache.contains(ip.getValue())) {
 		    logger.info("received new IP address " + ip)
 		    
-		    val targetName = targetNamePrefix + ip.getValue()
-		    val (_, id) = omp.createTarget(targetName, ip.getValue())
-		    cache += (ip.getValue() -> Target(id, targetName, ip.getValue()))
+		    val targetName = namePrefix + ip.getValue() + "-target"
+		    val taskName = namePrefix + ip.getValue() + "-task"
+		    
+		    val (_, targetId) = omp.createTarget(targetName, ip.getValue())
+		    val (_, taskId) = omp.createTask(taskName, config.id, targetId)
+		    
+		    cache += ip.getValue() ->
+		    	Target(targetId, targetName, ip.getValue(), List(Task(taskId, taskName, "")))
+		    	
+		    omp.startTask(taskId)
 		  }
 		}
 	}
@@ -156,8 +174,9 @@ class Subscriber(
 		  if (cache.contains(ip.getValue())) {
 		    logger.info("received delete for IP address " + ip)
 		    
-		    val target = cache.get(ip.getValue())
-		    omp.deleteTarget(target.get.id)
+		    val target = cache(ip.getValue())
+		    omp.deleteTask(target.tasks.first.id)
+		    omp.deleteTarget(target.id)
 		    
 		    cache.remove(ip.getValue())
 		  }
@@ -219,10 +238,23 @@ class Subscriber(
 	 */
 	def searchForExistingTargets() {
 		val (status, existingTargets) = omp.getTargets()
-		val ironvasTarget = existingTargets.filter(t => t.name.startsWith(targetNamePrefix))
+		val ironvasTarget = existingTargets.filter {
+			t => t.name.startsWith(namePrefix)
+		}
 		
 		for (target <- ironvasTarget) {
-			cache.put(target.hosts, target)
+			val taskOption = target.tasks.find {
+				t => t.name.startsWith(namePrefix)
+			}
+			
+			taskOption match {
+			  case Some(t) => {
+				  cache += target.hosts -> target.copy(tasks=List(t.copy()))
+			  }
+			  case None => {
+			    logger.warning("no ironvas task for existing target '%s' found")
+			  }
+			}
 		}
 	}
 
