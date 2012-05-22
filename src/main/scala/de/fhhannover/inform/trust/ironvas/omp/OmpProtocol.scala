@@ -72,5 +72,7 @@ object OmpProtocol {
     def deleteTarget(id: String) = <delete_target target_id={id} />
     
     def getTargets() = <get_targets/>
+      
+    def getConfigs() = <get_configs/>
     
 }

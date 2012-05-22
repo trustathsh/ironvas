@@ -152,6 +152,17 @@ class OmpConnection(
     }
     
     /**
+     * Sends the get_configs request.
+     * 
+     * @return a tuple with status information and the list of configs
+     */
+    def getConfigs() = {
+    	val request = OmpProtocol.getConfigs().toString
+    	val response = executeRequest(request)
+    	ompParser.getConfigsResponse(response)
+    }
+    
+    /**
      * Sends the get_reports request.
      * 
      * @param id the id of the report to get, if not given all reports are fetched

@@ -216,6 +216,27 @@ class OmpParser {
       getTargetsResponse(xml)
     }
     
+    /**
+     * Parse the response from a get_configs request.
+     * 
+     * @param xml the XML to parse
+     * @return a tuple with status information and a sequence of configs
+     */
+    def getConfigsResponse(xml: Elem) = {
+    	val statusCode = status(xml)
+    	val configs = for { config <- (xml \ "config") 
+    		id = (config \ "@id").text
+    		name = (config \ "name").text
+    	} yield Config(id, name)
+    	
+    	(statusCode, configs)
+    }
+    
+    def getConfigsResponse(xmlString: String): ((Int, String), Seq[Config]) = {
+    	val xml = XML.loadString(xmlString)
+    	getConfigsResponse(xml)
+    }
+    
     
     val dateExtractorRE = """\w+\s+(\w+)\s+(\d{1,2})\s+(\d\d):(\d\d):(\d\d)\s+(\d\d\d\d)""".r
     

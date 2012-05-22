@@ -74,12 +74,16 @@ class Subscriber(
 	 */
 	override def run() {
 		logger.info("starting " + getClass().getSimpleName())
-        
-		// TODO check for special ironvas config on openvas server
+
+		val (status, currentConfigs) = omp.getConfigs()
 		
-		searchForExistingTargets()
-		
-        try {
+		if (!currentConfigs.exists {c => c.name == config}) {
+			logger.warning("no config '%s' found, subscriber shutting down ...".format(config))
+			return
+		}
+		try {
+			searchForExistingTargets()
+		  
         	subscribe()
 	        while (!Thread.currentThread().isInterrupted()) {
 	        	val updates = poll()
@@ -90,22 +94,18 @@ class Subscriber(
 	        			result.getType() match {
 	        			  case SearchResult.Type.searchResult => {
 	        				  logger.finer("processing searchResult ...")
-	        				  
 	        				  processUpdates(filterSearchResult(result))
 	        			  }
 	        			  case SearchResult.Type.updateResult => {
 	        				  logger.finer("processing updateResult ...")
-	        			    
 	        				  processUpdates(filterSearchResult(result))
 	        			  }
 	        			  case SearchResult.Type.notifyResult => {
 	        				  logger.finer("processing notifyResult ...")
-	        				  
 	        				  processUpdates(filterSearchResult(result))
 	        			  }
 	        			  case SearchResult.Type.deleteResult => {
 		        			  logger.finer("processing deleteResult ...")
-		        			  
 		        			  processDeletes(filterSearchResult(result))
 	        			  }
 	        			} 
