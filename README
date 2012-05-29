@@ -6,8 +6,34 @@ aims to share security related informations (vulnerabilities
 detected by OpenVAS) with other network components in the [TNC architecture] [2]
 via IF-MAP.
 
-At the moment only the publish operation for vulnerability information
-is supported. Future enhancements are likely to include more functionality.
+ironvas consists of two elements:
+
+* One part - the "publisher" - simply fetches the latest scan reports stored in
+  an OpenVAS server, converts them into IF-MAP metadata
+  (currently "event"-metadata) and finally publishes them into a MAP server.
+  ironvas takes care to not flood the MAPS with
+  redundant information, furthermore you can specify a simple filter for the
+  vulnerabilities to publish (based on their risk factor).
+  If a scan report is deleted from the OpenVAS server, ironvas will purge all
+  published metadata, associated with the deleted report, from the MAPS.
+  In other words this means that ironvas always tries to reflect the current/latest
+  knowledge of a OpenVAS server in a MAP server.
+
+* The second, more experimental, part of ironvas - the "subscriber" - goes the
+  other way around.
+  It will subscribe for "request-for-investigation"-metadata of a PDP in the MAPS.
+  If the PDP publish those metadata to a IP address, ironvas schedules a new
+  scan task for that IP address in OpenVAS. If the scan produces new
+  vulnerability information they are collected by the "publisher" as described
+  above.
+  If the PDP removes the "request-for-investigation"-metadata from the IP
+  address, ironvas also removes the scan task (and with it the report) from
+  OpenVAS.
+  
+ironvas is avaiable in two versions, the binary package (`ironvas-x.x.x-bin.zip`)
+is ready to run, all you need is to configure it to your needs.
+If you like to build ironvas by your own you can use the source package
+(`ironvas-x.x.x-src.zip`). 
 
 
 Requirements
@@ -28,7 +54,8 @@ Configuration
 To setup the binary package you need to import the OpenVAS and MAP server
 certificates into `ironvas.jks`.
 On a Ubuntu installation of OpenVAS you can find the OpenVAS certificate in
-`/var/lib/openvas/CA/servercert.pem`.
+`/var/lib/openvas/CA/servercert.pem`. If you want to use ironvas with irond
+the keystores of both are configured with ready-to-use testing certificates. 
 
 The remaining configuration parameters can be done through the
 `configuration.properties` file in the ironvas package.
@@ -59,14 +86,11 @@ Now you can build ironvas, simply execute:
 
 in the root directory of the ironvas project.
 Maven should download all further needed dependencies for you. After a successful
-build you should find the `ironvas-x.x.x.jar` in the `target` subdirectory.
+build you should find the `ironvas-x.x.x.jar` in the `target` sub-directory.
 
 **Note** that the `package` phase creates a single executable JAR of ironvas. To
 include a `ironvas.jks` and a `configuration.properties` in this JAR file place
 both files in `src/main/resources` before executing the `package` phase.
-
-If you want to build a binary package (not a single big JAR) you can do so by
-running the `assembly:assembly` goal instead.
 
 
 Running
