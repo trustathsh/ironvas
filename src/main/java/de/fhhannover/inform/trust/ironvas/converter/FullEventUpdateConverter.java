@@ -66,7 +66,7 @@ public class FullEventUpdateConverter extends AbstractConverter {
 	public PublishElement singleUpdate(Vulnerability v, boolean isNotify) {
 		IpAddress ip = Identifiers.createIp4(v.getHost());
 		Document metadata = metadataFactory.createEvent(
-				v.getNvt().getName(), // name
+				v.getNvt().getName() + ":" + v.getId(), // name
 				dateFormat.format(v.getTimestamp()), // discovered-time
 				openVasServerId, // discoverer-id
 				(int)((v.getNvt().getCvss_base() * 10)+0.5), // magnitude (0-100)
@@ -101,29 +101,37 @@ public class FullEventUpdateConverter extends AbstractConverter {
 	public PublishDelete singleDelete(Vulnerability v) {
 		PublishDelete delete = Requests.createPublishDelete();
 		
-		IpAddress ip = Identifiers.createIp4(v.getHost());
 		String filter = String.format(
 				"meta:event[@ifmap-publisher-id='%s' "+
-				"and name='%s' "+
-				"and discovered-time='%s' "+
-				"and discoverer-id='%s' "+
-				"and magnitude='%s' " +
-				"and confidence='0' " +
-				"and significance='%s' " +
-				"and type='%s' "+
-				"and other-type-definition='' " +
-				"and information='%s' "+
-				"and vulnerability-uri='%s']",
+				"and name='%s:%s']",
 				
 				publisherId,
 				v.getNvt().getName(),
-				dateFormat.format(v.getTimestamp()),
-				openVasServerId,
-				(int)((v.getNvt().getCvss_base() * 10)+0.5),
-				mapSignificance(v.getNvt().getRisk_factor()),
-				EventType.cve,
-				v.getDescription(),
-				v.getNvt().getCve());
+				v.getId());
+		
+		IpAddress ip = Identifiers.createIp4(v.getHost());
+//		String filter = String.format(
+//				"meta:event[@ifmap-publisher-id='%s' "+
+//				"and name='%s' "+
+//				"and discovered-time='%s' "+
+//				"and discoverer-id='%s' "+
+//				"and magnitude='%s' " +
+//				"and confidence='0' " +
+//				"and significance='%s' " +
+//				"and type='%s' "+
+//				"and other-type-definition='' " +
+//				"and information='%s' "+
+//				"and vulnerability-uri='%s']",
+//				
+//				publisherId,
+//				v.getNvt().getName(),
+//				dateFormat.format(v.getTimestamp()),
+//				openVasServerId,
+//				(int)((v.getNvt().getCvss_base() * 10)+0.5),
+//				mapSignificance(v.getNvt().getRisk_factor()),
+//				EventType.cve,
+//				v.getDescription(),
+//				v.getNvt().getCve());
 
 		delete.addNamespaceDeclaration("meta", IfmapStrings.STD_METADATA_NS_URI);
 		delete.setFilter(filter);
