@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -109,10 +110,14 @@ public class Ironvas {
 				runSubscriber(ssrc, hook, watcher);
 			}
 			
-			watcher.run(); // returns if one thread is not alive anymore
-			hook.run();
 			
-			System.exit(1); // there is no way to exit with 0 at the moment
+			Scanner s = new Scanner(System.in);
+			do {
+				System.out.print("enter 'exit' to shutdown: ");
+			} while (!s.nextLine().equals("exit"));
+			
+			hook.run();
+			System.exit(0);
 		}
 	}
 	
