@@ -172,9 +172,13 @@ public class FullEventUpdateConverterTest {
 		String filter = "meta:event[@ifmap-publisher-id='ironvas' "+
 				"and name='phpinfo.php' "+
 				"and discovered-time='1970-01-01T01:00:00+0100' "+
-				"and discoverer-id='openvas@example.test'"+
-				"and type='cve'"+
-				"and information=''"+
+				"and discoverer-id='openvas@example.test' "+
+				"and magnitude='0' " +
+				"and confidence='0' " +
+				"and significance='important' " +
+				"and type='cve' "+
+				"and other-type-definition='' " +
+				"and information='' "+
 				"and vulnerability-uri='NOCVE']";
 		assertEquals(filter, d.getFilter());
 	}

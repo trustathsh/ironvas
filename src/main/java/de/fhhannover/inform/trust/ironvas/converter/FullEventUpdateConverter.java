@@ -102,19 +102,25 @@ public class FullEventUpdateConverter extends AbstractConverter {
 		PublishDelete delete = Requests.createPublishDelete();
 		
 		IpAddress ip = Identifiers.createIp4(v.getHost());
-		String filter = String.format( // TODO can we simplify this? (nvt_oid)
+		String filter = String.format(
 				"meta:event[@ifmap-publisher-id='%s' "+
 				"and name='%s' "+
 				"and discovered-time='%s' "+
-				"and discoverer-id='%s'"+
-				"and type='%s'"+
-				"and information='%s'"+
+				"and discoverer-id='%s' "+
+				"and magnitude='%s' " +
+				"and confidence='0' " +
+				"and significance='%s' " +
+				"and type='%s' "+
+				"and other-type-definition='' " +
+				"and information='%s' "+
 				"and vulnerability-uri='%s']",
 				
 				publisherId,
 				v.getNvt().getName(),
 				dateFormat.format(v.getTimestamp()),
 				openVasServerId,
+				(int)((v.getNvt().getCvss_base() * 10)+0.5),
+				mapSignificance(v.getNvt().getRisk_factor()),
 				EventType.cve,
 				v.getDescription(),
 				v.getNvt().getCve());
