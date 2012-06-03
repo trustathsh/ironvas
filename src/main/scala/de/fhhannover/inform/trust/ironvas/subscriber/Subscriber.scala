@@ -37,6 +37,7 @@ import de.fhhannover.inform.trust.ironvas.omp.OmpConnection
 import de.fhhannover.inform.trust.ironvas.omp.Target
 import de.fhhannover.inform.trust.ironvas.omp.Config
 import de.fhhannover.inform.trust.ironvas.omp.Task
+import de.fhhannover.inform.trust.ifmapj.exception.EndSessionException
 
 /**
  * This subscriber implementation watches the metadata graph for
@@ -128,6 +129,7 @@ class Subscriber(
                 Thread.currentThread().interrupt();
                 logger.info("wakup by interrupt signal, exiting ...")
             }
+            case e: EndSessionException => logger.warning("session ended during poll")
         }
         finally {
             logger.info("shutdown complete.")
