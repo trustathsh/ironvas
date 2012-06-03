@@ -1,6 +1,6 @@
 /*
  * Project: ironvas
- * Package: test.java.de.fhhannover.inform.trust.ironvas.converter
+ * Package: de.fhhannover.inform.trust.ironvas.converter
  * File:    FilterEventUpdateConverterTest.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover

@@ -1,6 +1,6 @@
 /*
  * Project: ironvas
- * Package: test.scala.de.fhhannover.inform.trust.ironvas.omp
+ * Package: de.fhhannover.inform.trust.ironvas.omp
  * File:    OmpParserTest.scala
  *
  * Copyright (C) 2011-2012 Hochschule Hannover

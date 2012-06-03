@@ -1,6 +1,6 @@
 /*
  * Project: ironvas
- * Package: main.java.de.fhhannover.inform.trust.ironvas.ifmap
+ * Package: de.fhhannover.inform.trust.ironvas.ifmap
  * File:    ThreadSafeSsrc.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover

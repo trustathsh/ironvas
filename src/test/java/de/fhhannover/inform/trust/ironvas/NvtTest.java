@@ -1,6 +1,6 @@
 /*
  * Project: ironvas
- * Package: test.java.de.fhhannover.inform.trust.ironvas
+ * Package: de.fhhannover.inform.trust.ironvas
  * File:    NvtTest.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
