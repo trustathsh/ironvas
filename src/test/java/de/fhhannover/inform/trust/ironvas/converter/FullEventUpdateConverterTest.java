@@ -84,7 +84,7 @@ public class FullEventUpdateConverterTest {
 	public void testSingleUpdateName() {
 		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
-		assertEquals("phpinfo.php",
+		assertEquals("phpinfo.php:f75673cf-c32a-467b-b495-1eb5fb2de100",
 				d.getElementsByTagName("name").item(0).getTextContent());
 	}
 	
@@ -170,16 +170,7 @@ public class FullEventUpdateConverterTest {
 	public void testSingleDeleteFilter() {
 		PublishDelete d = converter.singleDelete(v);
 		String filter = "meta:event[@ifmap-publisher-id='ironvas' "+
-				"and name='phpinfo.php' "+
-				"and discovered-time='1970-01-01T01:00:00+0100' "+
-				"and discoverer-id='openvas@example.test' "+
-				"and magnitude='0' " +
-				"and confidence='0' " +
-				"and significance='important' " +
-				"and type='cve' "+
-				"and other-type-definition='' " +
-				"and information='' "+
-				"and vulnerability-uri='NOCVE']";
+				"and name='phpinfo.php:f75673cf-c32a-467b-b495-1eb5fb2de100']";
 		assertEquals(filter, d.getFilter());
 	}
 }
