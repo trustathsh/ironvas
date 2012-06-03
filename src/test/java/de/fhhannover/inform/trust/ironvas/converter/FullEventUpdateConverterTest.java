@@ -84,7 +84,7 @@ public class FullEventUpdateConverterTest {
 	public void testSingleUpdateName() {
 		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
-		assertEquals("phpinfo.php:f75673cf-c32a-467b-b495-1eb5fb2de100",
+		assertEquals("phpinfo.php",
 				d.getElementsByTagName("name").item(0).getTextContent());
 	}
 	
@@ -140,7 +140,7 @@ public class FullEventUpdateConverterTest {
 	public void testSingleUpdateOtherTypeDefinition() {
 		PublishUpdate u = (PublishUpdate)converter.singleUpdate(v);
 		Document d = u.getMetadata().get(0);
-		assertEquals("",
+		assertEquals("f75673cf-c32a-467b-b495-1eb5fb2de100",
 				d.getElementsByTagName("other-type-definition").item(0).getTextContent());
 	}
 	
@@ -170,7 +170,7 @@ public class FullEventUpdateConverterTest {
 	public void testSingleDeleteFilter() {
 		PublishDelete d = converter.singleDelete(v);
 		String filter = "meta:event[@ifmap-publisher-id='ironvas' "+
-				"and name='phpinfo.php:f75673cf-c32a-467b-b495-1eb5fb2de100']";
+				"and other-type-definition='f75673cf-c32a-467b-b495-1eb5fb2de100']";
 		assertEquals(filter, d.getFilter());
 	}
 }

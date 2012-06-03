@@ -66,14 +66,14 @@ public class FullEventUpdateConverter extends AbstractConverter {
 	public PublishElement singleUpdate(Vulnerability v, boolean isNotify) {
 		IpAddress ip = Identifiers.createIp4(v.getHost());
 		Document metadata = metadataFactory.createEvent(
-				v.getNvt().getName() + ":" + v.getId(), // name
+				v.getNvt().getName(), // name
 				dateFormat.format(v.getTimestamp()), // discovered-time
 				openVasServerId, // discoverer-id
 				(int)((v.getNvt().getCvss_base() * 10)+0.5), // magnitude (0-100)
 				0, // confidence TODO define
 				mapSignificance(v.getNvt().getRisk_factor()), // significance
 				EventType.cve, // type
-				"", // other-type-definition TODO
+				v.getId(), // other-type-definition TODO
 				v.getDescription(), // information
 				v.getNvt().getCve() // vulnerability-uri
 				);
@@ -103,10 +103,9 @@ public class FullEventUpdateConverter extends AbstractConverter {
 		
 		String filter = String.format(
 				"meta:event[@ifmap-publisher-id='%s' "+
-				"and name='%s:%s']",
+				"and other-type-definition='%s']",
 				
 				publisherId,
-				v.getNvt().getName(),
 				v.getId());
 		
 		IpAddress ip = Identifiers.createIp4(v.getHost());
