@@ -254,7 +254,7 @@ class Subscriber(
 				  cache += target.hosts -> target.copy(tasks=List(t.copy()))
 			  }
 			  case None => {
-			    logger.warning("no ironvas task for existing target '%s' found")
+			    logger.finer("no ironvas task for existing target '%s' found".format(target.id))
 			  }
 			}
 		}
