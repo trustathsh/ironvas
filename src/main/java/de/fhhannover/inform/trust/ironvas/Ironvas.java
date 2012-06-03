@@ -90,6 +90,8 @@ public class Ironvas {
 				System.exit(1);
 			}
 			
+			OmpConnection omp = initOmp();
+			
 			// TODO introduce Executor for thread handling
 			Thread ssrcKeepaliveThread = new Thread(new Keepalive(ssrc,
 							Integer.parseInt(Configuration.ifmapKeepalive())),
@@ -103,11 +105,11 @@ public class Ironvas {
 			
 			if (Configuration.publisherEnable().equals("true")) {
 				logger.info("activate publisher ...");
-				runPublisher(ssrc, hook, watcher);
+				runPublisher(ssrc, omp, hook, watcher);
 			}
 			if (Configuration.subscriberEnable().equals("true")) {
 				logger.info("activate subscriber ...");
-				runSubscriber(ssrc, hook, watcher);
+				runSubscriber(ssrc, omp, hook, watcher);
 			}
 			
 			
@@ -129,15 +131,13 @@ public class Ironvas {
 	 * @param hook
 	 * @param watcher
 	 */
-	public static void runPublisher(SSRC ssrc, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
+	public static void runPublisher(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
 		Converter converter = createConverter(
 				ssrc.getPublisherId(), "openvas@" + Configuration.openvasIP(),
 				Configuration.updateFilter(), Configuration.notifyFilter());
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
-		OmpConnection omp = initOmp();
-		
 		VulnerabilityFetcher fetcher = new VulnerabilityFetcher(
 				handler,
 				omp,
@@ -166,8 +166,7 @@ public class Ironvas {
 	 * @param hook
 	 * @param watcher
 	 */
-	public static void runSubscriber(SSRC ssrc, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
-		OmpConnection omp = initOmp();
+	public static void runSubscriber(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
 		Subscriber subscriber = new Subscriber(
 				omp,
 				ssrc,

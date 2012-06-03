@@ -99,9 +99,11 @@ class OmpConnection(
      * @return a tuple with status and version information.
      */
     def getVersion() = {
+      synchronized {
         val request = OmpProtocol.getVersion().toString
         val response = executeRequest(request, false)
         ompParser.getVersionResponse(response)
+      }
     }
     
     /**
@@ -110,9 +112,11 @@ class OmpConnection(
      * @return a tuple with status information and a sequence of tasks
      */
     def getTasks() = {
+      synchronized {
         val request = OmpProtocol.getTasks().toString
         val response = executeRequest(request)
         ompParser.getTasksResponse(response)
+      }
     }
     
     /**
@@ -122,9 +126,11 @@ class OmpConnection(
      * @returns a tuple with status informations
      */
     def deleteTarget(id: String) = {
+      synchronized {
     	val request = OmpProtocol.deleteTarget(id).toString
     	val response = executeRequest(request)
     	ompParser.status(response)
+      }
     }
     
     /**
@@ -135,9 +141,11 @@ class OmpConnection(
      * @returns a tuple with status information and the id of the created target
      */
     def createTarget(name: String, host: String) = {
+      synchronized {
     	val request = OmpProtocol.createTarget(name, host).toString
     	val response = executeRequest(request)
     	ompParser.createTargetResponse(response)
+      }
     }
     
     /**
@@ -146,9 +154,11 @@ class OmpConnection(
      * @returns a tuple with status information and the list of targets
      */
     def getTargets() = {
+      synchronized {
     	val request = OmpProtocol.getTargets().toString
     	val response = executeRequest(request)
     	ompParser.getTargetResponse(response)
+      }
     }
     
     /**
@@ -157,9 +167,11 @@ class OmpConnection(
      * @return a tuple with status information and the list of configs
      */
     def getConfigs() = {
+      synchronized {
     	val request = OmpProtocol.getConfigs().toString
     	val response = executeRequest(request)
     	ompParser.getConfigsResponse(response)
+      }
     }
     
     /**
@@ -170,6 +182,7 @@ class OmpConnection(
      *         for each report that was fetched
      */
     def getReports(id: String = "") = {
+      synchronized {
         val request = if (id == "") {
             OmpProtocol.getReports().toString
         }
@@ -178,6 +191,7 @@ class OmpConnection(
         }
         val response = executeRequest(request)
         ompParser.getReportsResponse(response)
+      }
     }
     
     /**
@@ -189,9 +203,11 @@ class OmpConnection(
      * @return a tuple with status information and the id of the created task
      */
     def createTask(name: String, configId: String, targetId: String) = {
+      synchronized {
     	val request = OmpProtocol.createTask(name, configId, targetId).toString
     	val response = executeRequest(request)
     	ompParser.createTaskResponse(response)
+      }
     }
     
     
@@ -202,9 +218,11 @@ class OmpConnection(
      * @return a tuple with status information
      */
     def deleteTask(id: String) = {
+      synchronized {
     	val request = OmpProtocol.deleteTask(id).toString
     	val response = executeRequest(request)
     	ompParser.status(response)
+      }
     }
     
     /**
@@ -214,9 +232,28 @@ class OmpConnection(
      * @return a tuple with status information
      */
     def startTask(id: String) = {
+      synchronized {
     	val request = OmpProtocol.startTask(id).toString
     	val response = executeRequest(request)
     	ompParser.status(response)
+      }
+    }
+    
+    def getLatestReports() = {
+      synchronized {
+        val getTasksRequest = OmpProtocol.getTasks().toString
+        val getTaskResponse = executeRequest(getTasksRequest)
+        val (_, tasks) = ompParser getTasksResponse getTaskResponse
+        
+        val tasksWithLastReport = tasks filter { _.lastReportId.length != 0 }
+        
+        val latestReports = for (task <- tasksWithLastReport) yield {
+          val (_, reports) = getReports(task.lastReportId)
+          (task, reports.first)
+        }
+        latestReports
+        // TODO add status to result value
+      }
     }
     
     /**
