@@ -18,6 +18,16 @@ ironvas consists of two elements:
   published metadata, associated with the deleted report, from the MAPS.
   In other words this means that ironvas always tries to reflect the current/latest
   knowledge of a OpenVAS server in a MAP server.
+  The event-metadata that ironvas published is filled with the following
+  values from the scan reports:
+  - the name of the vulnerability
+  - the time it was discovered
+  - the id of the discoverer (OpenVAS server)
+  - the magnitude of the vulnerability
+  - the significance
+  - the event-type == CVE
+  - CVE information
+  - and the corresponding URIs for the CVE entries
 
 * The second, more experimental, part of ironvas - the "subscriber" - goes the
   other way around.
