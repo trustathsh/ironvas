@@ -39,6 +39,7 @@ import de.fhhannover.inform.trust.ifmapj.IfmapJHelper;
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
 import de.fhhannover.inform.trust.ifmapj.exception.InitializationException;
 import de.fhhannover.inform.trust.ironvas.converter.Converter;
+import de.fhhannover.inform.trust.ironvas.converter.EsukomFeatureConverter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterParser;
 import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
@@ -134,7 +135,7 @@ public class Ironvas {
 	public static void runPublisher(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
 		Converter converter = createConverter(
 				ssrc.getPublisherId(), "openvas@" + Configuration.openvasIP(),
-				Configuration.updateFilter(), Configuration.notifyFilter());
+				Configuration.updateFilter(), Configuration.notifyFilter(), ssrc);
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
@@ -192,13 +193,19 @@ public class Ironvas {
 	 * @param filterNotify
 	 * @return
 	 */
-	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify) {
-		FilterParser parser = new FilterParser();
-		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
-		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
+	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify, SSRC ssrc) {
+		// TODO choose converter class based on configuration
 		
-		Converter converter = new FilterEventUpdateConverter(
-				publisherId, openvasId, updateFilter, notifyFilter);
+		// if esukom
+		Converter converter = new EsukomFeatureConverter(publisherId, openvasId, ssrc);
+		
+		// else
+//		FilterParser parser = new FilterParser();
+//		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
+//		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
+//		
+//		Converter converter = new FilterEventUpdateConverter(
+//				publisherId, openvasId, updateFilter, notifyFilter);
 		return converter;
 	}
 	
