@@ -46,11 +46,8 @@ public class FilterEventUpdateConverter extends FullEventUpdateConverter {
 	private Map<RiskfactorLevel, Boolean> filterNotify;
 
 	public FilterEventUpdateConverter(
-			String publisherId,
-			String openVasServerId,
 			Map<RiskfactorLevel, Boolean> filterUpdate,
 			Map<RiskfactorLevel, Boolean> filterNotify) {
-		super(publisherId, openVasServerId);
 		this.filterUpdate = new HashMap<RiskfactorLevel, Boolean>(filterUpdate);
 		this.filterNotify = new HashMap<RiskfactorLevel, Boolean>(filterNotify);
 	}

@@ -32,11 +32,14 @@ import org.w3c.dom.Document;
 import de.fhhannover.inform.trust.ifmapj.identifier.IpAddress;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishDelete;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishUpdate;
+import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.Nvt;
 import de.fhhannover.inform.trust.ironvas.RiskfactorLevel;
 import de.fhhannover.inform.trust.ironvas.ThreatLevel;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
 import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.*;
 
 public class FullEventUpdateConverterTest {
 	
@@ -50,8 +53,13 @@ public class FullEventUpdateConverterTest {
 	@Before
 	public void setUp() {
 		String publisherId = "ironvas";
-		String openVASId = "openvas@example.test";
-		converter = new FullEventUpdateConverter(publisherId, openVASId);
+		String openVasServerId = "openvas@example.test";
+		
+		converter = new FullEventUpdateConverter();
+		Context context = mock(Context.class);
+		when(context.getIfmapPublisherId()).thenReturn(publisherId);
+		when(context.getOpenVasServerId()).thenReturn(openVasServerId);
+		converter.setContext(context);
 		
 		format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
 		

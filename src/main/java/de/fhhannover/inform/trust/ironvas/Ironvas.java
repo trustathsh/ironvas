@@ -42,6 +42,7 @@ import de.fhhannover.inform.trust.ironvas.converter.Converter;
 import de.fhhannover.inform.trust.ironvas.converter.EsukomFeatureConverter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.converter.FilterParser;
+import de.fhhannover.inform.trust.ironvas.converter.FullEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
 import de.fhhannover.inform.trust.ironvas.ifmap.ThreadSafeSsrc;
 import de.fhhannover.inform.trust.ironvas.omp.OmpConnection;
@@ -133,9 +134,7 @@ public class Ironvas {
 	 * @param watcher
 	 */
 	public static void runPublisher(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
-		Converter converter = createConverter(
-				ssrc.getPublisherId(), "openvas@" + Configuration.openvasIP(),
-				Configuration.updateFilter(), Configuration.notifyFilter(), ssrc);
+		Converter converter = createConverter(ssrc, omp);
 		VulnerabilityHandler handler =
 				new VulnerabilityHandler(ssrc, converter);
 
@@ -193,19 +192,28 @@ public class Ironvas {
 	 * @param filterNotify
 	 * @return
 	 */
-	public static Converter createConverter(String publisherId, String openvasId, String filterUpdate, String filterNotify, SSRC ssrc) {
-		// TODO choose converter class based on configuration
+	public static Converter createConverter(SSRC ssrc, OmpConnection omp) {
+		Context context = new Context(ssrc, "openvas@" + omp.host());
 		
-		// if esukom
-		Converter converter = new EsukomFeatureConverter(publisherId, openvasId, ssrc);
-		
-		// else
-//		FilterParser parser = new FilterParser();
-//		Map<RiskfactorLevel, Boolean> updateFilter = parser.parseLine(filterUpdate);
-//		Map<RiskfactorLevel, Boolean> notifyFilter = parser.parseLine(filterNotify);
-//		
-//		Converter converter = new FilterEventUpdateConverter(
-//				publisherId, openvasId, updateFilter, notifyFilter);
+		Converter converter = null;
+		if (Configuration.getConverterName().equals("esucom")) {
+			converter = new EsukomFeatureConverter();
+		}
+		else if (Configuration.getConverterName().equals("full")) {
+			converter = new FullEventUpdateConverter();
+		}
+		else if (Configuration.getConverterName().equals("filter")) {
+			FilterParser parser = new FilterParser();
+			Map<RiskfactorLevel, Boolean> updateFilter =
+					parser.parseLine(Configuration.updateFilter());
+			Map<RiskfactorLevel, Boolean> notifyFilter =
+					parser.parseLine(Configuration.notifyFilter());
+			converter = new FilterEventUpdateConverter(updateFilter, notifyFilter);
+		}
+		else {
+			throw new RuntimeException("unknown converter name");
+		}
+		converter.setContext(context);
 		return converter;
 	}
 	

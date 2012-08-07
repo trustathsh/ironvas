@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.fhhannover.inform.trust.ifmapj.messages.PublishElement;
+import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.Nvt;
 import de.fhhannover.inform.trust.ironvas.RiskfactorLevel;
 import de.fhhannover.inform.trust.ironvas.ThreatLevel;
@@ -39,9 +40,15 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
 
 import static org.junit.Assert.*;
 
+import static org.mockito.Mockito.*;
+
 public class FilterEventUpdateConverterTest {
 	
 	private Set<Vulnerability> vulnerabilities;
+	
+	private Context context;
+	private String publisherId = "ironvas";
+	private String openVasServerId = "openvas@example.com";
 	
 	@Before
 	public void setUp() {
@@ -52,6 +59,10 @@ public class FilterEventUpdateConverterTest {
 		vulnerabilities.add(
 				new Vulnerability("", new Date(0), "", "", "", ThreatLevel.High, "",
 						new Nvt("", "", 0.0f, RiskfactorLevel.Critical, "", "")));
+		
+		context = mock(Context.class);
+		when(context.getIfmapPublisherId()).thenReturn(publisherId);
+		when(context.getOpenVasServerId()).thenReturn(openVasServerId);
 	}
 	
 	@Test
@@ -69,9 +80,8 @@ public class FilterEventUpdateConverterTest {
 		}
 		
 		FilterEventUpdateConverter converter =
-				new FilterEventUpdateConverter(
-						"publisher-id", "openvas",
-						filterUpdate, filterNotify);
+				new FilterEventUpdateConverter(filterUpdate, filterNotify);
+		converter.setContext(context);
 		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
 		assertEquals(0, publish.size());
 	}
@@ -91,9 +101,8 @@ public class FilterEventUpdateConverterTest {
 		}
 		
 		FilterEventUpdateConverter converter =
-				new FilterEventUpdateConverter(
-						"publisher-id", "openvas",
-						filterUpdate, filterNotify);
+				new FilterEventUpdateConverter(filterUpdate, filterNotify);
+		converter.setContext(context);
 		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
 		assertEquals(2, publish.size());
 	}
@@ -113,9 +122,8 @@ public class FilterEventUpdateConverterTest {
 		}
 		
 		FilterEventUpdateConverter converter =
-				new FilterEventUpdateConverter(
-						"publisher-id", "openvas",
-						filterUpdate, filterNotify);
+				new FilterEventUpdateConverter(filterUpdate, filterNotify);
+		converter.setContext(context);
 		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
 		assertEquals(2, publish.size());
 	}
@@ -141,9 +149,8 @@ public class FilterEventUpdateConverterTest {
 		filterNotify.put(RiskfactorLevel.Critical, true);
 		
 		FilterEventUpdateConverter converter =
-				new FilterEventUpdateConverter(
-						"publisher-id", "openvas",
-						filterUpdate, filterNotify);
+				new FilterEventUpdateConverter(filterUpdate, filterNotify);
+		converter.setContext(context);
 		List<PublishElement> publish = converter.toUpdates(vulnerabilities);
 		assertEquals(3, publish.size());
 	}
@@ -169,9 +176,8 @@ public class FilterEventUpdateConverterTest {
 		filterNotify.put(RiskfactorLevel.Critical, true);
 		
 		FilterEventUpdateConverter converter =
-				new FilterEventUpdateConverter(
-						"publisher-id", "openvas",
-						filterUpdate, filterNotify);
+				new FilterEventUpdateConverter(filterUpdate, filterNotify);
+		converter.setContext(context);
 		List<PublishElement> publish = converter.toDeletes(vulnerabilities);
 		assertEquals(2, publish.size());
 	}

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.fhhannover.inform.trust.ifmapj.messages.PublishElement;
+import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
 
 /**
@@ -47,11 +48,10 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  *
  */
 public interface Converter {
-	
+
 	public List<PublishElement> toUpdates(Set<Vulnerability> vulnerabilities);
 	public List<PublishElement> toDeletes(Set<Vulnerability> vulnerabilities);
 	
-	public void setPublisherId(String publisherId);
-	public void setOpenVasServerId(String openVasServerId);
+	public Converter setContext(Context context);
 
 }

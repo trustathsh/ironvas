@@ -72,6 +72,8 @@ public class Configuration {
 	private static final String UPDATE_FILTER    = "ironvas.publish.update";
 	private static final String NOTIFY_FILTER    = "ironvas.publish.notify";
 	
+	private static final String CONVERTER_NAME   = "ironvas.publish.converter";
+	
 	// subscriber
 	private static final String SUBSCRIBER_PDP = "ironvas.subscriber.pdp";
 	private static final String SUBSCRIBER_NAME_PREFIX = "ironvas.subscriber.namePrefix";
@@ -199,6 +201,10 @@ public class Configuration {
 	
 	public static String subscriberConfig() {
 		return get(SUBSCRIBER_CONFIG);
+	}
+	
+	public static String getConverterName() {
+		return get(CONVERTER_NAME);
 	}
 
 }

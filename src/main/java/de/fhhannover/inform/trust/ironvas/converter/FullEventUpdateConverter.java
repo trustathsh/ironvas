@@ -40,6 +40,7 @@ import de.fhhannover.inform.trust.ifmapj.messages.Requests;
 import de.fhhannover.inform.trust.ifmapj.metadata.EventType;
 import de.fhhannover.inform.trust.ifmapj.metadata.Significance;
 import de.fhhannover.inform.trust.ifmapj.metadata.StandardIfmapMetadataFactory;
+import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.RiskfactorLevel;
 import de.fhhannover.inform.trust.ironvas.ThreatLevel;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
@@ -52,23 +53,21 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  * @author Ralf Steuerwald
  *
  */
-public class FullEventUpdateConverter extends AbstractConverter {
+public class FullEventUpdateConverter implements Converter {
 	
 	private StandardIfmapMetadataFactory metadataFactory =
 			IfmapJ.createStandardMetadataFactory();
 	
+	private Context context;
+	
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
-	public FullEventUpdateConverter(String publisherId, String openVasServerId) {
-		super(publisherId, openVasServerId);
-	}
-	
 	public PublishElement singleUpdate(Vulnerability v, boolean isNotify) {
 		IpAddress ip = Identifiers.createIp4(v.getHost());
 		Document metadata = metadataFactory.createEvent(
 				v.getNvt().getName(), // name
 				dateFormat.format(v.getTimestamp()), // discovered-time
-				openVasServerId, // discoverer-id
+				context.getOpenVasServerId(), // discoverer-id
 				(int)((v.getNvt().getCvss_base() * 10)+0.5), // magnitude (0-100)
 				0, // confidence TODO define
 				mapSignificance(v.getNvt().getRisk_factor()), // significance
@@ -105,7 +104,7 @@ public class FullEventUpdateConverter extends AbstractConverter {
 				"meta:event[@ifmap-publisher-id='%s' "+
 				"and other-type-definition='%s']",
 				
-				publisherId,
+				context.getIfmapPublisherId(),
 				v.getId());
 		
 		IpAddress ip = Identifiers.createIp4(v.getHost());
@@ -177,6 +176,15 @@ public class FullEventUpdateConverter extends AbstractConverter {
 		case Debug:  return Significance.informational;
 		default:     return Significance.informational;
 		}
+	}
+
+	@Override
+	public Converter setContext(Context context) {
+		if (context == null) {
+			throw new IllegalArgumentException("context cannot be null");
+		}
+		this.context = context;
+		return this;
 	}
 
 }

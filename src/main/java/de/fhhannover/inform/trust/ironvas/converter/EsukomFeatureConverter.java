@@ -37,10 +37,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.fhhannover.inform.trust.ifmapj.binding.IfmapStrings;
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
-import de.fhhannover.inform.trust.ifmapj.exception.IfmapErrorResult;
-import de.fhhannover.inform.trust.ifmapj.exception.IfmapException;
 import de.fhhannover.inform.trust.ifmapj.identifier.Device;
 import de.fhhannover.inform.trust.ifmapj.identifier.Identifiers;
 import de.fhhannover.inform.trust.ifmapj.identifier.Identity;
@@ -49,9 +46,7 @@ import de.fhhannover.inform.trust.ifmapj.identifier.IpAddress;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishElement;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishUpdate;
 import de.fhhannover.inform.trust.ifmapj.messages.Requests;
-import de.fhhannover.inform.trust.ifmapj.messages.ResultItem;
-import de.fhhannover.inform.trust.ifmapj.messages.SearchRequest;
-import de.fhhannover.inform.trust.ifmapj.messages.SearchResult;
+import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
 
 /**
@@ -62,7 +57,7 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  * @author Ralf Steuerwald
  *
  */
-public class EsukomFeatureConverter extends AbstractConverter {
+public class EsukomFeatureConverter implements Converter {
 	
 	final static String OTHER_TYPE_DEFINITION = "32939:category";
 	final static String NAMESPACE = "http://www.esukom.de/2012/ifmap-metadata/1";
@@ -82,8 +77,8 @@ public class EsukomFeatureConverter extends AbstractConverter {
 	
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
-	private SSRC ssrc;
-
+	private Context context;
+	
 	/**
 	 * Creates a new {@link EsukomFeatureConverter}. The {@link SSRC} is needed
 	 * to enable the Converter to search for {@link Device} identifier by a
@@ -93,10 +88,7 @@ public class EsukomFeatureConverter extends AbstractConverter {
 	 * @param openVasServerId
 	 * @param ssrc
 	 */
-	public EsukomFeatureConverter(String publisherId, String openVasServerId, SSRC ssrc) {
-		super(publisherId, openVasServerId);
-		this.ssrc = ssrc;
-		
+	public EsukomFeatureConverter() {
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
 		try {
@@ -131,7 +123,7 @@ public class EsukomFeatureConverter extends AbstractConverter {
 				// check if there is a device identifier for the current host
 				String host = vulnerabilityList.get(0).getHost();
 				IpAddress ip = Identifiers.createIp4(host);
-				Device dev = searchDeviceFor(ip);
+				Device dev = context.getIfmapDeviceForIp(ip);
 				
 				if (dev != null) {
 					logger.finer("found device " + dev + " for " + ip);
@@ -249,44 +241,6 @@ public class EsukomFeatureConverter extends AbstractConverter {
 		return doc;
 	}
 	
-	
-	/**
-	 * Searches the MAPS for a device identifier for the given IP address.
-	 * 
-	 * @param ip the source IP address
-	 * @return the device identifier or <code>null</code> if nothing could be
-	 *          found
-	 */
-	private Device searchDeviceFor(IpAddress ip) {
-		SearchRequest req = Requests.createSearchReq();
-		req.setMatchLinksFilter("meta:device-ip");
-		req.setMaxDepth(1);
-		req.setStartIdentifier(ip);
-		
-		req.addNamespaceDeclaration(
-			    IfmapStrings.BASE_PREFIX, IfmapStrings.BASE_NS_URI);
-		req.addNamespaceDeclaration(
-			    IfmapStrings.STD_METADATA_PREFIX, IfmapStrings.STD_METADATA_NS_URI);
-		
-		try {
-			SearchResult result = ssrc.search(req);
-			if (result.getResultItems().size() >= 3) { // items: device, ip, and device-ip
-				Device d = extractDeviceFromResultItems(result.getResultItems());
-				return d;
-			}
-		} catch (IfmapErrorResult e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IfmapException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		// TODO search: ip --- [ar-ip] --- ar --- [ar-dev] -- dev
-		
-		return null;
-	}
-	
 	private Document createCategoryLink(String name) {
 		Document doc = documentBuilder.newDocument();
 		Element e = doc.createElementNS(NAMESPACE, NAMESPACE_PREFIX + ":" + name);
@@ -296,28 +250,19 @@ public class EsukomFeatureConverter extends AbstractConverter {
 		return doc;
 	}
 
-	/**
-	 * Pulls the device identifier from the given {@link ResultItem}.
-	 * 
-	 * @param resultItems the device identifier or <code>null</code>
-	 * @return
-	 */
-	private Device extractDeviceFromResultItems(List<ResultItem> resultItems) {
-		for (ResultItem i: resultItems) {
-			if (i.getIdentifier1() instanceof Device) {
-				return (Device)i.getIdentifier1();
-			}
-			if (i.getIdentifier2() instanceof Device) {
-				return (Device)i.getIdentifier2();
-			}
-		}
-		return null;
-	}
-
 	@Override
 	public List<PublishElement> toDeletes(Set<Vulnerability> vulnerabilities) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Converter setContext(Context context) {
+		if (context == null) {
+			throw new IllegalArgumentException("context cannot be null");
+		}
+		this.context = context;
+		return this;
 	}
 
 }
