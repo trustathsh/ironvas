@@ -42,7 +42,7 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  * means that if one {@link Vulnerability} object is mapped to more than
  * one representation, the delete-mapping for the same {@link Vulnerability}
  * object must result in a complete delete operation for all previously
- * generated representation of that {@link Vulnerability}. 
+ * generated representation of that {@link Vulnerability}.
  * 
  * @author Ralf Steuerwald
  *

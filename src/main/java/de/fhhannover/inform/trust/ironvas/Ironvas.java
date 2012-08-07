@@ -24,7 +24,6 @@ package de.fhhannover.inform.trust.ironvas;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -39,10 +38,6 @@ import de.fhhannover.inform.trust.ifmapj.IfmapJHelper;
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
 import de.fhhannover.inform.trust.ifmapj.exception.InitializationException;
 import de.fhhannover.inform.trust.ironvas.converter.Converter;
-import de.fhhannover.inform.trust.ironvas.converter.EsukomFeatureConverter;
-import de.fhhannover.inform.trust.ironvas.converter.FilterEventUpdateConverter;
-import de.fhhannover.inform.trust.ironvas.converter.FilterParser;
-import de.fhhannover.inform.trust.ironvas.converter.FullEventUpdateConverter;
 import de.fhhannover.inform.trust.ironvas.ifmap.Keepalive;
 import de.fhhannover.inform.trust.ironvas.ifmap.ThreadSafeSsrc;
 import de.fhhannover.inform.trust.ironvas.omp.OmpConnection;
@@ -196,23 +191,35 @@ public class Ironvas {
 		Context context = new Context(ssrc, "openvas@" + omp.host());
 		
 		Converter converter = null;
-		if (Configuration.getConverterName().equals("esucom")) {
-			converter = new EsukomFeatureConverter();
+		String className = Configuration.getConverterName();
+		
+		logger.info("try to load '"+className+"'");
+		try {
+			Class<?> clazz = Class.forName(className);
+			Class<?>[] interfaces = clazz.getInterfaces();
+			
+			boolean implementsConverter = false;
+			for (Class<?> i : interfaces) {
+				if (i.equals(Converter.class)) {
+					implementsConverter = true;
+				}
+			}
+			if (!implementsConverter) {
+				throw new RuntimeException("'"+className+"' does not "+
+									"implement the Converter interface");
+			}
+			
+			// yes, it implements interface so we can safely cast to Converter
+			converter = (Converter)clazz.newInstance();
+			
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
-		else if (Configuration.getConverterName().equals("full")) {
-			converter = new FullEventUpdateConverter();
-		}
-		else if (Configuration.getConverterName().equals("filter")) {
-			FilterParser parser = new FilterParser();
-			Map<RiskfactorLevel, Boolean> updateFilter =
-					parser.parseLine(Configuration.updateFilter());
-			Map<RiskfactorLevel, Boolean> notifyFilter =
-					parser.parseLine(Configuration.notifyFilter());
-			converter = new FilterEventUpdateConverter(updateFilter, notifyFilter);
-		}
-		else {
-			throw new RuntimeException("unknown converter name");
-		}
+
 		converter.setContext(context);
 		return converter;
 	}
