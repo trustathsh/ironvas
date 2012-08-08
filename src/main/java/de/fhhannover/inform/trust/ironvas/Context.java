@@ -21,6 +21,7 @@
 
 package de.fhhannover.inform.trust.ironvas;
 
+import java.util.Iterator;
 import java.util.List;
 
 import de.fhhannover.inform.trust.ifmapj.binding.IfmapStrings;
@@ -71,8 +72,8 @@ public class Context {
 	 */
 	public Device getIfmapDeviceForIp(IpAddress ip) {
 		SearchRequest req = Requests.createSearchReq();
-		req.setMatchLinksFilter("meta:device-ip");
-		req.setMaxDepth(1);
+		req.setMatchLinksFilter("meta:device-ip or meta:access-request-ip or meta:access-request-device");
+		req.setMaxDepth(2);
 		req.setStartIdentifier(ip);
 		
 		req.addNamespaceDeclaration(
@@ -93,9 +94,6 @@ public class Context {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		// TODO search: ip --- [ar-ip] --- ar --- [ar-dev] -- dev
-		
 		return null;
 	}
 	
