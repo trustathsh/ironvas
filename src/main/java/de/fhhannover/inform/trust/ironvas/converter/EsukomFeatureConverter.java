@@ -43,8 +43,10 @@ import de.fhhannover.inform.trust.ifmapj.identifier.Identifiers;
 import de.fhhannover.inform.trust.ifmapj.identifier.Identity;
 import de.fhhannover.inform.trust.ifmapj.identifier.IdentityType;
 import de.fhhannover.inform.trust.ifmapj.identifier.IpAddress;
+import de.fhhannover.inform.trust.ifmapj.messages.PublishDelete;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishElement;
 import de.fhhannover.inform.trust.ifmapj.messages.PublishUpdate;
+import de.fhhannover.inform.trust.ifmapj.messages.Request;
 import de.fhhannover.inform.trust.ifmapj.messages.Requests;
 import de.fhhannover.inform.trust.ironvas.Context;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
@@ -79,6 +81,8 @@ public class EsukomFeatureConverter implements Converter {
 	
 	private Context context;
 	
+	private Map<String, Device> hostDeviceMaping = new HashMap<String, Device>();
+	
 	/**
 	 * Creates a new {@link EsukomFeatureConverter}. The {@link SSRC} is needed
 	 * to enable the Converter to search for {@link Device} identifier by a
@@ -99,41 +103,31 @@ public class EsukomFeatureConverter implements Converter {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public List<PublishElement> toUpdates(Set<Vulnerability> vulnerabilities) {
 		List<PublishElement> elements = new ArrayList<PublishElement>();
 		
 		// group the vulnerabilities by IP address
-		Map<String, List<Vulnerability>> byIp = new HashMap<String, List<Vulnerability>>();
-		for (Vulnerability v: vulnerabilities) {
-			if (byIp.containsKey(v.getHost())) {
-				List<Vulnerability> l = byIp.get(v.getHost());
-				l.add(v);
-			}
-			else {
-				List<Vulnerability> l = new ArrayList<Vulnerability>();
-				l.add(v);
-				byIp.put(v.getHost(), l);
-			}
-		}
+		Map<String, List<Vulnerability>> byIp = sortByIp(vulnerabilities);
 		
 		for (List<Vulnerability> vulnerabilityList : byIp.values()) {
 			if (vulnerabilityList.size() > 0) {
 				// check if there is a device identifier for the current host
-				String host = vulnerabilityList.get(0).getHost();
-				IpAddress ip = Identifiers.createIp4(host);
-				Device dev = context.getIfmapDeviceForIp(ip);
+				Vulnerability first = vulnerabilityList.get(0);
+				Device dev = findDeviceForVulnerability(first);
 				
 				if (dev != null) {
-					logger.finer("found device " + dev + " for " + ip);
+					logger.finer("found device " + dev + " for " + first.getHost());
 				}
 				else {
-					logger.finer("creating device for " + ip);
+					logger.finer("creating device for " + first.getHost());
 					dev = Identifiers.createDev(new SecureRandom().nextInt() + "");
 				}
+				hostDeviceMaping.put(first.getHost(), dev);
 				
 				// create the "vulnerability-scan-result" root category
+				// for the current host 
 				PublishUpdate update = Requests.createPublishUpdate();
 				Identity category = createCategory(ROOT_CATEGORY_NAME, dev.getName());
 				Document deviceCategory = createCategoryLink("device-category");
@@ -252,8 +246,49 @@ public class EsukomFeatureConverter implements Converter {
 
 	@Override
 	public List<PublishElement> toDeletes(Set<Vulnerability> vulnerabilities) {
-		// TODO Auto-generated method stub
-		return null;
+		List<PublishElement> elements = new ArrayList<PublishElement>();
+		
+		Map<String, List<Vulnerability>> byIp = sortByIp(vulnerabilities);
+		
+		for (List<Vulnerability> vulnerabilityList : byIp.values()) {
+			if (vulnerabilityList.size() > 0) {
+				Vulnerability first = vulnerabilityList.get(0);
+				Device dev = hostDeviceMaping.get(first.getHost());
+				
+				for (Vulnerability v : vulnerabilityList) {
+					List<PublishElement> e = singleVulnerabilityDelete(v, dev);
+					elements.addAll(e);
+				}
+			}
+		}
+		return elements;
+	}
+	
+	private List<PublishElement> singleVulnerabilityDelete(Vulnerability v, Device dev) {
+		List<PublishElement> elements = new ArrayList<PublishElement>();
+		
+		// delete link to parent category (vulnerability-scan-result)
+		PublishDelete parentDelete = Requests.createPublishDelete();
+		Identity parentCategory = createCategory(ROOT_CATEGORY_NAME, dev.getName());
+		Identity vulnerability = createCategory(
+				parentCategory.getName() + ".vulnerability:" + v.getId(), dev.getName());
+		parentDelete.setIdentifier1(parentCategory);
+		parentDelete.setIdentifier2(vulnerability);
+		String filter = String.format("%s:subcategory-of[@ifmap-publisher-id='%s']", NAMESPACE_PREFIX, context.getIfmapPublisherId());
+		parentDelete.setFilter(filter);
+		parentDelete.addNamespaceDeclaration(NAMESPACE_PREFIX, NAMESPACE);
+		
+		elements.add(parentDelete);
+
+		// delete all metadata (=features) from the vulnerability(-category)
+		PublishDelete featureDelete = Requests.createPublishDelete();
+		featureDelete.setIdentifier1(vulnerability);
+		String featureFilter = String.format("%s:feature[@ifmap-publisher-id='%s']", NAMESPACE_PREFIX, context.getIfmapPublisherId());
+		featureDelete.setFilter(featureFilter);
+		featureDelete.addNamespaceDeclaration(NAMESPACE_PREFIX, NAMESPACE);
+		elements.add(featureDelete);
+		
+		return elements;
 	}
 
 	@Override
@@ -263,6 +298,27 @@ public class EsukomFeatureConverter implements Converter {
 		}
 		this.context = context;
 		return this;
+	}
+	
+	private Map<String, List<Vulnerability>> sortByIp(Set<Vulnerability> vulnerabilities) {
+		Map<String, List<Vulnerability>> byIp = new HashMap<String, List<Vulnerability>>();
+		for (Vulnerability v: vulnerabilities) {
+			if (!byIp.containsKey(v.getHost())) {
+				List<Vulnerability> l = new ArrayList<Vulnerability>();
+				byIp.put(v.getHost(), l);
+			}
+			List<Vulnerability> l = byIp.get(v.getHost());
+			l.add(v);
+		}
+		return byIp;
+	}
+	
+	private Device findDeviceForVulnerability(Vulnerability v) {
+		String host = v.getHost();
+		IpAddress ip = Identifiers.createIp4(host);
+		Device dev = context.getIfmapDeviceForIp(ip);
+		
+		return dev;
 	}
 
 }
