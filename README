@@ -12,8 +12,8 @@ ironvas consists of two elements:
   an OpenVAS server, converts them into IF-MAP metadata
   (currently "event"-metadata) and finally publishes them into a MAP server.
   ironvas takes care to not flood the MAPS with
-  redundant information, furthermore you can specify a simple filter for the
-  vulnerabilities to publish (based on their risk factor).
+  redundant information, furthermore you can specify a filter (in 'filter.js')
+  for the vulnerabilities to publish.
   If a scan report is deleted from the OpenVAS server, ironvas will purge all
   published metadata, associated with the deleted report, from the MAPS.
   In other words this means that ironvas always tries to reflect the current/latest

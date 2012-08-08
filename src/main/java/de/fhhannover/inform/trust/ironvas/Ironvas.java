@@ -136,7 +136,8 @@ public class Ironvas {
 		VulnerabilityFetcher fetcher = new VulnerabilityFetcher(
 				handler,
 				omp,
-				Integer.parseInt(Configuration.publishInterval()));
+				Integer.parseInt(Configuration.publishInterval()),
+				new ScriptableFilter());
 
 		Thread handlerThread = new Thread(handler,
 				"handler-thread");
