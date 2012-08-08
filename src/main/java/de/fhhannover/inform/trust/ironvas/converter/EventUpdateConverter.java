@@ -53,7 +53,7 @@ import de.fhhannover.inform.trust.ironvas.Vulnerability;
  * @author Ralf Steuerwald
  *
  */
-public class FullEventUpdateConverter implements Converter {
+public class EventUpdateConverter implements Converter {
 	
 	private StandardIfmapMetadataFactory metadataFactory =
 			IfmapJ.createStandardMetadataFactory();
@@ -62,7 +62,7 @@ public class FullEventUpdateConverter implements Converter {
 	
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
-	public PublishElement singleUpdate(Vulnerability v, boolean isNotify) {
+	public PublishElement singleUpdate(Vulnerability v) {
 		IpAddress ip = Identifiers.createIp4(v.getHost());
 		Document metadata = metadataFactory.createEvent(
 				v.getNvt().getName(), // name
@@ -77,24 +77,11 @@ public class FullEventUpdateConverter implements Converter {
 				v.getNvt().getCve() // vulnerability-uri
 				);
 		
-		if (isNotify) {
-			PublishNotify notify = Requests.createPublishNotify();
-			notify.setIdentifier1(ip);
-			notify.addMetadata(metadata);
-			
-			return notify;
-		}
-		else {
-			PublishUpdate update = Requests.createPublishUpdate();
-			update.setIdentifier1(ip);
-			update.addMetadata(metadata);
-			
-			return update;
-		}
-	}
-	
-	public PublishElement singleUpdate(Vulnerability v) {
-		return singleUpdate(v, false);
+		PublishUpdate update = Requests.createPublishUpdate();
+		update.setIdentifier1(ip);
+		update.addMetadata(metadata);
+		
+		return update;
 	}
 	
 	public PublishDelete singleDelete(Vulnerability v) {

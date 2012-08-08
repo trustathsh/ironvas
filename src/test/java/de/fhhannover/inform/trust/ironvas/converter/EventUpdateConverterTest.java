@@ -41,9 +41,9 @@ import static org.junit.Assert.*;
 
 import static org.mockito.Mockito.*;
 
-public class FullEventUpdateConverterTest {
+public class EventUpdateConverterTest {
 	
-	private FullEventUpdateConverter converter;
+	private EventUpdateConverter converter;
 	private SimpleDateFormat format;
 	private Nvt nvt;
 	private Vulnerability v;
@@ -55,7 +55,7 @@ public class FullEventUpdateConverterTest {
 		String publisherId = "ironvas";
 		String openVasServerId = "openvas@example.test";
 		
-		converter = new FullEventUpdateConverter();
+		converter = new EventUpdateConverter();
 		Context context = mock(Context.class);
 		when(context.getIfmapPublisherId()).thenReturn(publisherId);
 		when(context.getOpenVasServerId()).thenReturn(openVasServerId);
