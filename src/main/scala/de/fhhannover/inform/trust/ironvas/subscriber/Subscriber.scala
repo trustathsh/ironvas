@@ -144,6 +144,7 @@ class Subscriber(
 		  val ip = item.getIdentifier() match {
 		    case Array(_, i: IpAddress) => i
 		    case Array(i: IpAddress, _) => i
+		    case _ => return
 		  }
 
 		  if (!cache.contains(ip.getValue())) {
@@ -171,6 +172,7 @@ class Subscriber(
 		  val ip = item.getIdentifier() match {
 		    case Array(_, i: IpAddress) => i
 		    case Array(i: IpAddress, _) => i
+		    case _ => return
 		  }
 		  
 		  if (cache.contains(ip.getValue())) {
