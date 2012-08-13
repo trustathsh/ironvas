@@ -70,6 +70,10 @@ class OmpConnection(
         keystorePath: String,
         keystorePassword: String) {
     
+    require(host != null)
+    require(port > 0)
+    require(username != null)
+    require(password != null)
     
     private val socketFactory = if (keystorePath == null || keystorePassword == null) {
         SSLSocketFactory.getDefault()
@@ -127,6 +131,8 @@ class OmpConnection(
      * @returns a tuple with status informations
      */
     def deleteTarget(id: String): (Int, String) = {
+      require(id != null)
+      
       synchronized {
     	val request = OmpProtocol.deleteTarget(id).toString
     	val response = executeRequest(request)
@@ -142,6 +148,9 @@ class OmpConnection(
      * @returns a tuple with status information and the id of the created target
      */
     def createTarget(name: String, host: String): ((Int, String), String) = {
+      require(name != null)
+      require(host != null)
+      
       synchronized {
     	val request = OmpProtocol.createTarget(name, host).toString
     	val response = executeRequest(request)
@@ -183,6 +192,8 @@ class OmpConnection(
      *         for each report that was fetched
      */
     def getReports(id: String = ""): ((Int, String), Seq[Seq[Vulnerability]]) = {
+      require(id != null)
+      
       synchronized {
         val request = if (id == "") {
             OmpProtocol.getReports().toString
@@ -204,6 +215,10 @@ class OmpConnection(
      * @return a tuple with status information and the id of the created task
      */
     def createTask(name: String, configId: String, targetId: String): ((Int, String), String) = {
+      require(name != null)
+      require(configId != null)
+      require(targetId != null)
+      
       synchronized {
     	val request = OmpProtocol.createTask(name, configId, targetId).toString
     	val response = executeRequest(request)
@@ -219,6 +234,8 @@ class OmpConnection(
      * @return a tuple with status information
      */
     def deleteTask(id: String): (Int, String) = {
+      require(id != null)
+      
       synchronized {
     	val request = OmpProtocol.deleteTask(id).toString
     	val response = executeRequest(request)
@@ -233,6 +250,8 @@ class OmpConnection(
      * @return a tuple with status information
      */
     def startTask(id: String): (Int, String) = {
+      require(id != null)
+      
       synchronized {
     	val request = OmpProtocol.startTask(id).toString
     	val response = executeRequest(request)
