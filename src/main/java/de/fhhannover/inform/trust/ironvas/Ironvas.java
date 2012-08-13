@@ -24,7 +24,6 @@ package de.fhhannover.inform.trust.ironvas;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -51,11 +50,96 @@ import de.fhhannover.inform.trust.ironvas.subscriber.Subscriber;
  * @author Ralf Steuerwald
  *
  */
-public class Ironvas {
+public class Ironvas implements Runnable {
 	
 	private static final Logger logger =
 			Logger.getLogger(Ironvas.class.getName());
 	private static final String LOGGING_CONFIG_FILE = "/logging.properties";
+	
+	private SSRC ssrc;
+	private OmpConnection omp;
+	private Keepalive ssrcKeepalive;
+
+	private Converter converter;
+	private VulnerabilityHandler handler;
+	private VulnerabilityFetcher fetcher;
+
+	private Subscriber subscriber;
+	
+	private Thread handlerThread;
+	private Thread fetcherThread;
+	private Thread subscriberThread;
+	private Thread ssrcKeepaliveThread;
+	
+	private ShutdownHook shutdownHook;
+	
+	/**
+	 * Initializes all ironvas components based on the parameter in
+	 * {@link Configuration}, therefore the {@link Configuration} must be
+	 * loaded before calling this constructor.
+	 */
+	public Ironvas() {
+		ssrc = initIfmap();
+		omp  = initOmp();
+		ssrcKeepalive = new Keepalive(ssrc, Configuration.ifmapKeepalive());
+
+		converter = createConverter(ssrc, omp);
+		handler = new VulnerabilityHandler(ssrc, converter);
+		fetcher = new VulnerabilityFetcher(
+				handler,
+				omp,
+				Configuration.publishInterval(),
+				new ScriptableFilter());
+		
+		subscriber = new Subscriber(
+				omp,
+				ssrc,
+				Configuration.subscriberPdp(),
+				Configuration.subscriberNamePrefix(),
+				Configuration.subscriberConfig());
+		
+		handlerThread = new Thread(handler, "handler-thread");
+		fetcherThread = new Thread(fetcher, "fetcher-thread");
+		subscriberThread    = new Thread(subscriber, "subscriber-thread");
+		ssrcKeepaliveThread = new Thread(ssrcKeepalive, "ssrc-keepalive-thread");
+		
+		shutdownHook = new ShutdownHook();
+		shutdownHook.add(handlerThread);
+		shutdownHook.add(fetcherThread);
+		shutdownHook.add(subscriberThread);
+		shutdownHook.add(ssrcKeepaliveThread);
+		Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+	}
+	
+	@Override
+	public void run() {
+		if (!Configuration.publisherEnable() && !Configuration.subscriberEnable()) {
+			logger.warning("nothing to do, shutting down ...");
+			System.exit(0);
+		}
+		
+		try {
+			ssrc.newSession();
+			ssrc.purgePublisher();
+		} catch (Exception e) {
+			System.err.println("could not connect to ifmap server: " + e);
+			System.exit(1);
+		}
+		
+		ssrcKeepaliveThread.start();
+		
+		if (Configuration.publisherEnable()) {
+			logger.info("activate publisher ...");
+			handlerThread.start();
+			fetcherThread.start();
+		}
+		if (Configuration.subscriberEnable()) {
+			logger.info("activate subscriber ...");
+			subscriberThread.start();
+		}
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		setupLogging();
@@ -65,117 +149,9 @@ public class Ironvas {
 		// overwrite configuration with command line arguments
 
 		
-		// begin initialization ------------------------------------------------
+		Ironvas ironvas = new Ironvas();
+		ironvas.run(); // execute ironvas in the main thread
 		
-		
-		if (Configuration.publisherEnable().equals("false") &&
-				Configuration.subscriberEnable().equals("false")) {
-			logger.warning("nothing to do, shutting down ...");
-		}
-		else {
-			ShutdownHook hook = new ShutdownHook();
-			Runtime.getRuntime().addShutdownHook(new Thread(hook));
-			ThreadInterruptionWatcher watcher = new ThreadInterruptionWatcher();
-
-			SSRC ssrc = initIfmap();
-
-			try {
-				ssrc.newSession();
-				ssrc.purgePublisher();
-			} catch (Exception e) {
-				System.err.println("could not connect to ifmap server: " + e);
-				System.exit(1);
-			}
-			
-			OmpConnection omp = initOmp();
-			
-			// TODO introduce Executor for thread handling
-			Thread ssrcKeepaliveThread = new Thread(new Keepalive(ssrc,
-							Integer.parseInt(Configuration.ifmapKeepalive())),
-					"ssrc-keepalive-thread");
-			
-			hook.add(ssrcKeepaliveThread);
-			watcher.add(ssrcKeepaliveThread);
-			ssrcKeepaliveThread.start();
-			
-			
-			
-			if (Configuration.publisherEnable().equals("true")) {
-				logger.info("activate publisher ...");
-				runPublisher(ssrc, omp, hook, watcher);
-			}
-			if (Configuration.subscriberEnable().equals("true")) {
-				logger.info("activate subscriber ...");
-				runSubscriber(ssrc, omp, hook, watcher);
-			}
-			
-			
-			Scanner s = new Scanner(System.in);
-			do {
-				System.out.print("enter 'exit' to shutdown: ");
-			} while (!s.nextLine().equals("exit"));
-			
-			hook.run();
-			System.exit(0);
-		}
-	}
-	
-	/**
-	 * Creates and starts the publisher part of ironvas based on the values
-	 * in {@link Configuration}.
-	 * 
-	 * @param ssrc
-	 * @param hook
-	 * @param watcher
-	 */
-	public static void runPublisher(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
-		Converter converter = createConverter(ssrc, omp);
-		VulnerabilityHandler handler =
-				new VulnerabilityHandler(ssrc, converter);
-
-		VulnerabilityFetcher fetcher = new VulnerabilityFetcher(
-				handler,
-				omp,
-				Integer.parseInt(Configuration.publishInterval()),
-				new ScriptableFilter());
-
-		Thread handlerThread = new Thread(handler,
-				"handler-thread");
-		Thread fetcherThread = new Thread(fetcher,
-				"fetcher-thread");
-		
-		hook.add(handlerThread);
-		hook.add(fetcherThread);
-		
-		watcher.add(handlerThread);
-		watcher.add(fetcherThread);
-		
-		handlerThread.start();
-		fetcherThread.start();
-	}
-	
-	/**
-	 * Creates and starts the subscriber part of ironvas based on the values
-	 * in {@link Configuration}.
-	 * 
-	 * @param ssrc
-	 * @param hook
-	 * @param watcher
-	 */
-	public static void runSubscriber(SSRC ssrc, OmpConnection omp, ShutdownHook hook, ThreadInterruptionWatcher watcher) {
-		Subscriber subscriber = new Subscriber(
-				omp,
-				ssrc,
-				Configuration.subscriberPdp(),
-				Configuration.subscriberNamePrefix(),
-				Configuration.subscriberConfig());
-		
-		Thread subscriberThread = new Thread(subscriber, "subscriber-thread");
-		
-		hook.add(subscriberThread);
-		watcher.add(subscriberThread);
-		
-		subscriberThread.start();
 	}
 	
 	/**
@@ -209,8 +185,6 @@ public class Ironvas {
 				throw new RuntimeException("'"+className+"' does not "+
 									"implement the Converter interface");
 			}
-			
-			// yes, it implements interface so we can safely cast to Converter
 			converter = (Converter)clazz.newInstance();
 			
 		} catch (ClassNotFoundException e) {
@@ -297,10 +271,10 @@ public class Ironvas {
 	 * @param keypass
 	 * @return
 	 */
-	public static OmpConnection initOmp(String ip, String port, String user, String pass, String keypath, String keypass) {
+	public static OmpConnection initOmp(String ip, int port, String user, String pass, String keypath, String keypass) {
 		OmpConnection omp = new OmpConnection(
 				ip, 
-				Integer.parseInt(port),
+				port,
 				user,
 				pass,
 				keypath,
@@ -357,25 +331,4 @@ class ShutdownHook extends ThreadList implements Runnable {
 			t.interrupt();
 		}
 	}
-}
-
-class ThreadInterruptionWatcher extends ThreadList implements Runnable {
-
-	@Override
-	public void run() {
-		boolean allAlive = true;
-		while (allAlive) {
-			for (Thread t : this) {
-				if (!t.isAlive()) {
-					allAlive = false;
-				}
-			}
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// we don't care about this special exception right here
-			}
-		}
-	}
-	
 }

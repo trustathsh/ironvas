@@ -69,9 +69,6 @@ public class Configuration {
 	private static final String IFMAP_KEEPALIVE  = "ironvas.ifmap.interval";
 	
 	// publisher
-	private static final String UPDATE_FILTER    = "ironvas.publish.update";
-	private static final String NOTIFY_FILTER    = "ironvas.publish.notify";
-	
 	private static final String CONVERTER_NAME   = "ironvas.publish.converter";
 	
 	// subscriber
@@ -123,12 +120,12 @@ public class Configuration {
 		return properties.getProperty(key);
 	}
 	
-	public static String publisherEnable() {
-		return get(PUBLISHER_ENABLE);
+	public static boolean publisherEnable() {
+		return get(PUBLISHER_ENABLE).equals("true");
 	}
 	
-	public static String subscriberEnable() {
-		return get(SUBSCRIBER_ENABLE);
+	public static boolean subscriberEnable() {
+		return get(SUBSCRIBER_ENABLE).equals("true");
 	}
 	
 	public static String ifmapAuthMethod() {
@@ -163,8 +160,8 @@ public class Configuration {
 		return get(OPENVAS_IP);
 	}
 
-	public static String openvasPort() {
-		return get(OPENVAS_PORT);
+	public static int openvasPort() {
+		return Integer.parseInt(get(OPENVAS_PORT));
 	}
 
 	public static String openvasUser() {
@@ -175,22 +172,14 @@ public class Configuration {
 		return get(OPENVAS_PASSWORD);
 	}
 
-	public static String publishInterval() {
-		return get(PUBLISH_INTERVAL);
+	public static int publishInterval() {
+		return Integer.parseInt(get(PUBLISH_INTERVAL));
 	}
 
-	public static String ifmapKeepalive() {
-		return get(IFMAP_KEEPALIVE);
+	public static int ifmapKeepalive() {
+		return Integer.parseInt(get(IFMAP_KEEPALIVE));
 	}
 
-	public static String updateFilter() {
-		return get(UPDATE_FILTER);
-	}
-	
-	public static String notifyFilter() {
-		return get(NOTIFY_FILTER);
-	}
-	
 	public static String subscriberPdp() {
 		return get(SUBSCRIBER_PDP);
 	}
