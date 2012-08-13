@@ -23,6 +23,7 @@ package de.fhhannover.inform.trust.ironvas;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.fhhannover.inform.trust.ifmapj.binding.IfmapStrings;
 import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
@@ -48,6 +49,9 @@ import de.fhhannover.inform.trust.ironvas.converter.Converter;
  *
  */
 public class Context {
+	
+	private static final Logger logger =
+			Logger.getLogger(Context.class.getName());
 	
 	private SSRC ssrc;
 	private String openVasServerId;
@@ -88,11 +92,9 @@ public class Context {
 				return d;
 			}
 		} catch (IfmapErrorResult e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warning("exception occured while searching for device: " + e.getMessage());
 		} catch (IfmapException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warning("exception occured while searching for device: " + e.getMessage());
 		}
 		return null;
 	}
