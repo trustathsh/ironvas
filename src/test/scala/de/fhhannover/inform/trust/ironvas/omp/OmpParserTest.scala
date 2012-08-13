@@ -119,8 +119,22 @@ class OmpParserTest {
     }
     
     @Test
-    def testGetTasksResponse() {
-    	// TODO
+    def testGetTasksResponseElementSize() {
+    	val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
+    	assertEquals(3, tasks.size)
+    }
+    
+    @Test
+    def testGetTasksResponseLastReports() {
+    	val lastReportIds = List(
+    	    "3f892e8b-2d6c-4ce4-ad36-d6ccd9e9779c",
+    	    "b1409e73-621d-4cc2-9578-3bda5c2a89d8",
+    	    "ff8cd5e6-c3e4-4d0a-bc9a-18e401430a8a")
+      
+    	val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
+    	for (task <- tasks) {
+    		assertTrue(lastReportIds.contains(task.lastReportId))
+    	}
     }
     
     @Test
@@ -149,7 +163,6 @@ class OmpParserTest {
         	assertEquals(id, vulnerability.getId())
         }
     }
-    // TODO vulnerability.{timestamp, subnet, host, port, threat, description}
     
     @Test
     def testGetReportsResponseNvtOid() {
@@ -176,7 +189,6 @@ class OmpParserTest {
         	assertEquals(name, vulnerability.getNvt().getName())
         }
     }
-    // TODO nvt.{cvss_base, risk_factor, cve, bid}
     
     @Test
     def testParseCvssBaseValidValues() {
@@ -201,6 +213,181 @@ class OmpParserTest {
 
 
 object Responses {
+  
+  val getTasks = """
+<get_tasks_response status="200" status_text="OK">
+  <task_count>3</task_count>
+  <sort>
+    <field>ROWID<order>ascending</order></field>
+  </sort>
+  <apply_overrides>0</apply_overrides>
+  <task id="4e4ec115-d138-43b3-a919-872e3edd1278">
+    <name>DVL-task</name>
+    <comment/>
+    <config id="74db13d6-7489-11df-91b9-002264764cea">
+      <name>Full and very deep ultimate</name>
+    </config>
+    <escalator id="">
+      <name/>
+    </escalator>
+    <target id="06dbae40-4b2e-4975-9df2-d1bae50f845c">
+      <name>DVL-host</name>
+    </target>
+    <slave id="">
+      <name/>
+    </slave>
+    <status>Done</status>
+    <progress>-1</progress>
+    <report_count>1<finished>1</finished></report_count>
+    <trend/>
+    <schedule id="">
+      <name/>
+      <next_time>over</next_time>
+    </schedule>
+    <first_report>
+      <report id="3f892e8b-2d6c-4ce4-ad36-d6ccd9e9779c">
+        <timestamp>Wed Mar  7 14:47:13 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>2</info>
+          <log>11</log>
+          <warning>0</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </first_report>
+    <last_report>
+      <report id="3f892e8b-2d6c-4ce4-ad36-d6ccd9e9779c">
+        <timestamp>Wed Mar  7 14:47:13 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>2</info>
+          <log>11</log>
+          <warning>0</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </last_report>
+  </task>
+  <task id="ff0ab0bd-cf25-4bd1-a2f3-40194c91b7cf">
+    <name>vms</name>
+    <comment/>
+    <config id="74db13d6-7489-11df-91b9-002264764cea">
+      <name>Full and very deep ultimate</name>
+    </config>
+    <escalator id="">
+      <name/>
+    </escalator>
+    <target id="a8325a53-8453-4d65-9277-ec0a28dbf58c">
+      <name>vms</name>
+    </target>
+    <slave id="">
+      <name/>
+    </slave>
+    <status>Done</status>
+    <progress>-1</progress>
+    <report_count>1<finished>1</finished></report_count>
+    <trend/>
+    <schedule id="">
+      <name/>
+      <next_time>over</next_time>
+    </schedule>
+    <first_report>
+      <report id="ff8cd5e6-c3e4-4d0a-bc9a-18e401430a8a">
+        <timestamp>Wed Mar  7 19:30:30 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>2</info>
+          <log>10</log>
+          <warning>1</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </first_report>
+    <last_report>
+      <report id="ff8cd5e6-c3e4-4d0a-bc9a-18e401430a8a">
+        <timestamp>Wed Mar  7 19:30:30 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>2</info>
+          <log>10</log>
+          <warning>1</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </last_report>
+  </task>
+  <task id="fce7bb27-b670-4691-bfbc-3acac73679e2">
+    <name>DVL-local</name>
+    <comment/>
+    <config id="374d800e-5b89-4afe-b160-bbc869027ce3">
+      <name>DVL-config-local</name>
+    </config>
+    <escalator id="">
+      <name/>
+    </escalator>
+    <target id="06dbae40-4b2e-4975-9df2-d1bae50f845c">
+      <name>DVL-host</name>
+    </target>
+    <slave id="">
+      <name/>
+    </slave>
+    <status>Done</status>
+    <progress>-1</progress>
+    <report_count>2<finished>2</finished></report_count>
+    <trend>up</trend>
+    <schedule id="">
+      <name/>
+      <next_time>over</next_time>
+    </schedule>
+    <first_report>
+      <report id="d67678ba-2c54-4f77-84dd-bfe9e3c45f13">
+        <timestamp>Thu Mar  8 19:30:09 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>4</info>
+          <log>17</log>
+          <warning>0</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </first_report>
+    <last_report>
+      <report id="b1409e73-621d-4cc2-9578-3bda5c2a89d8">
+        <timestamp>Thu Mar  8 20:23:49 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>4</info>
+          <log>17</log>
+          <warning>0</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </last_report>
+    <second_last_report>
+      <report id="d67678ba-2c54-4f77-84dd-bfe9e3c45f13">
+        <timestamp>Thu Mar  8 19:30:09 2012</timestamp>
+        <result_count>
+          <debug>0</debug>
+          <hole>0</hole>
+          <info>4</info>
+          <log>17</log>
+          <warning>0</warning>
+          <false_positive>0</false_positive>
+        </result_count>
+      </report>
+    </second_last_report>
+  </task>
+</get_tasks_response>
+    """
+  
+  
   val getTargets = """
 <get_targets_response status="200" status_text="OK">
   <target id="b493b7a8-7489-11df-a3ec-002264764cea">
