@@ -12,8 +12,6 @@
             <includes>
             	<include>src/main/java/</include>
             	<include>src/main/scala/</include>
-            	<include>src/main/templates/</include>
-            	<include>src/main/assembly/</include>
             	
             	<include>LICENSE</include>
             	<include>NOTICE</include>
@@ -21,6 +19,15 @@
             	<include>pom.xml</include>
             </includes>
             <outputDirectory></outputDirectory>
+        </fileSet>
+        <fileSet>
+        	<directory>${basedir}/src/main/templates</directory>
+        	<includes>
+        		<include>configuration.properties</include>
+        		<include>filter.js</include>
+        		<include>ironvas.jks</include>
+        	</includes>
+        	<outputDirectory>src/main/resources/</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>
