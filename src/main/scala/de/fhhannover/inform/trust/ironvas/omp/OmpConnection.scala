@@ -30,14 +30,15 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.Socket
 import java.util.logging.Logger
-
 import scala.util.control.Breaks.break
 import scala.util.control.Breaks.breakable
-
 import javax.net.ssl.SSLSocketFactory
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamConstants
+import de.fhhannover.inform.trust.ironvas.Vulnerability
+import java.io.IOException
+import java.net.UnknownHostException
 
 /**
  * Implements a connection to an OpenVAS server via the OpenVAS Management
@@ -98,7 +99,7 @@ class OmpConnection(
      * 
      * @return a tuple with status and version information.
      */
-    def getVersion() = {
+    def getVersion(): ((Int, String), String) = {
       synchronized {
         val request = OmpProtocol.getVersion().toString
         val response = executeRequest(request, false)
@@ -111,7 +112,7 @@ class OmpConnection(
      * 
      * @return a tuple with status information and a sequence of tasks
      */
-    def getTasks() = {
+    def getTasks(): ((Int, String), Seq[Task]) = {
       synchronized {
         val request = OmpProtocol.getTasks().toString
         val response = executeRequest(request)
@@ -125,7 +126,7 @@ class OmpConnection(
      * @param id the target to delete
      * @returns a tuple with status informations
      */
-    def deleteTarget(id: String) = {
+    def deleteTarget(id: String): (Int, String) = {
       synchronized {
     	val request = OmpProtocol.deleteTarget(id).toString
     	val response = executeRequest(request)
@@ -140,7 +141,7 @@ class OmpConnection(
      * @param host the host (list) for the new target
      * @returns a tuple with status information and the id of the created target
      */
-    def createTarget(name: String, host: String) = {
+    def createTarget(name: String, host: String): ((Int, String), String) = {
       synchronized {
     	val request = OmpProtocol.createTarget(name, host).toString
     	val response = executeRequest(request)
@@ -153,7 +154,7 @@ class OmpConnection(
      * 
      * @returns a tuple with status information and the list of targets
      */
-    def getTargets() = {
+    def getTargets(): ((Int, String), Seq[Target]) = {
       synchronized {
     	val request = OmpProtocol.getTargets().toString
     	val response = executeRequest(request)
@@ -166,7 +167,7 @@ class OmpConnection(
      * 
      * @return a tuple with status information and the list of configs
      */
-    def getConfigs() = {
+    def getConfigs(): ((Int, String), Seq[Config]) = {
       synchronized {
     	val request = OmpProtocol.getConfigs().toString
     	val response = executeRequest(request)
@@ -181,7 +182,7 @@ class OmpConnection(
      * @return a tuple with status information and a sequence of vulnerabilities
      *         for each report that was fetched
      */
-    def getReports(id: String = "") = {
+    def getReports(id: String = ""): ((Int, String), Seq[Seq[Vulnerability]]) = {
       synchronized {
         val request = if (id == "") {
             OmpProtocol.getReports().toString
@@ -202,7 +203,7 @@ class OmpConnection(
      * @param targetId the id of the task target
      * @return a tuple with status information and the id of the created task
      */
-    def createTask(name: String, configId: String, targetId: String) = {
+    def createTask(name: String, configId: String, targetId: String): ((Int, String), String) = {
       synchronized {
     	val request = OmpProtocol.createTask(name, configId, targetId).toString
     	val response = executeRequest(request)
@@ -217,7 +218,7 @@ class OmpConnection(
      * @param id the task id of the task to be deleted
      * @return a tuple with status information
      */
-    def deleteTask(id: String) = {
+    def deleteTask(id: String): (Int, String) = {
       synchronized {
     	val request = OmpProtocol.deleteTask(id).toString
     	val response = executeRequest(request)
@@ -231,7 +232,7 @@ class OmpConnection(
      * @param id the task id of the task to be started
      * @return a tuple with status information
      */
-    def startTask(id: String) = {
+    def startTask(id: String): (Int, String) = {
       synchronized {
     	val request = OmpProtocol.startTask(id).toString
     	val response = executeRequest(request)
@@ -239,7 +240,7 @@ class OmpConnection(
       }
     }
     
-    def getLatestReports() = {
+    def getLatestReports(): Seq[(Task, Seq[Vulnerability])] = {
       synchronized {
         val getTasksRequest = OmpProtocol.getTasks().toString
         val getTaskResponse = executeRequest(getTasksRequest)
@@ -252,7 +253,6 @@ class OmpConnection(
           (task, reports.first)
         }
         latestReports
-        // TODO add status to result value
       }
     }
     
@@ -278,7 +278,7 @@ class OmpConnection(
      * After executing the command the connection is closed.
      */
     private def executeRequest(request: String,
-            withAuthentication: Boolean = true) = { // TODO handle exception and re-throw OmpException
+            withAuthentication: Boolean = true) = {
         logger.finer("sending request " + request)
         
         val connection = connect() // IOException, UnknownHostException
