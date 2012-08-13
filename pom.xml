@@ -153,8 +153,14 @@
                     </descriptors>
                 </configuration>
             </plugin>
-			
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/templates</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
 
 	<dependencies>

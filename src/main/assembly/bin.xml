@@ -18,6 +18,7 @@
         <fileSet>
             <directory>${basedir}/src/main/templates</directory>
             <outputDirectory></outputDirectory>
+            <filtered>true</filtered>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
