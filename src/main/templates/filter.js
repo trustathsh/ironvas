@@ -6,8 +6,8 @@ importPackage(Packages.de.fhhannover.inform.trust.ironvas);
  * discarded from further processing.
  */
 function filter(vulnerability) {
-	//return true; // default process all vulnerability
-	return filterByThreatLevel(vulnerability);
+	return true; // default process all vulnerability
+	//return filterByThreatLevel(vulnerability);
 }
 
 
