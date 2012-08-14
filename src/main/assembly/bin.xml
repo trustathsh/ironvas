@@ -13,12 +13,23 @@
             <unpack>false</unpack>
         </dependencySet>
     </dependencySets>
+	
+	<files>
+		<file>
+			<source>${basedir}/src/main/templates/start.sh</source>
+			<outputDirectory></outputDirectory>
+			<fileMode>755</fileMode>
+            <filtered>true</filtered>
+		</file>
+	</files>
 
     <fileSets>
         <fileSet>
             <directory>${basedir}/src/main/templates</directory>
             <outputDirectory></outputDirectory>
-            <filtered>true</filtered>
+			<excludes>
+				<exclude>start.sh</exclude>
+			</excludes>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
