@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "ironvas"
 
-version := "0.0.5"
+version := "0.1.0"
 
 organization := "de.fhhannover.inform.trust"
 
