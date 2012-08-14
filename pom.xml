@@ -79,6 +79,10 @@
                     				<resource>ironvas.jks</resource>
                     				<file>src/main/resources/ironvas.jks</file>
                 				</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+								<resource>filter.js</resource>
+								<file>src/main/resources/filter.js</file>
+								</transformer>
                 				<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                     				<resource>LICENSE</resource>
                     				<file>LICENSE</file>
@@ -129,6 +133,7 @@
                 	<excludes>
                 		<exclude>*.properties</exclude>
                 		<exclude>*.jks</exclude>
+						<exclude>filter.js</exclude>
                 	</excludes>
 <!--
                      <archive>
