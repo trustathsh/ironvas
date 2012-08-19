@@ -1,7 +1,7 @@
 /*
  * Project: ironvas
  * Package: de.fhhannover.inform.trust.ironvas.converter
- * File:    FullEventUpdateConverter.java
+ * File:    EventUpdateConverter.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
@@ -46,7 +46,7 @@ import de.fhhannover.inform.trust.ironvas.ThreatLevel;
 import de.fhhannover.inform.trust.ironvas.Vulnerability;
 
 /**
- * The <code>FullEventUpdateConverter</code> maps {@link Vulnerability} objects to
+ * The <code>EventUpdateConverter</code> maps {@link Vulnerability} objects to
  * IF-MAP event metadata and choose the update operation for all
  * vulnerabilities. No filtering is applied to the set of vulnerabilities.
  * 

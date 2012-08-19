@@ -1,7 +1,7 @@
 /*
  * Project: ironvas
  * Package: de.fhhannover.inform.trust.ironvas.converter
- * File:    FullEventUpdateConverterTest.java
+ * File:    EventUpdateConverterTest.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
