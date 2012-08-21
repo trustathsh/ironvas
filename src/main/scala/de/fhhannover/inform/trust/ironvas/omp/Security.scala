@@ -4,7 +4,7 @@
  * File:    Security.scala
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -28,21 +28,21 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 
 object Security {
-    
-    def initSslSocketFactory(path: String, pass: String) = {
-        val trustManagers = {
-            val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            val keystore = {
-                val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                keystore.load(
-                        getClass().getResourceAsStream(path), pass.toCharArray())
-                keystore
-            }
-            factory.init(keystore)
-            factory.getTrustManagers()
-        }
-        val context = SSLContext.getInstance("TLS")
-        context.init(null, trustManagers, new SecureRandom)
-        context.getSocketFactory()
+
+  def initSslSocketFactory(path: String, pass: String) = {
+    val trustManagers = {
+      val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+      val keystore = {
+        val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+        keystore.load(
+          getClass().getResourceAsStream(path), pass.toCharArray())
+        keystore
+      }
+      factory.init(keystore)
+      factory.getTrustManagers()
     }
+    val context = SSLContext.getInstance("TLS")
+    context.init(null, trustManagers, new SecureRandom)
+    context.getSocketFactory()
+  }
 }

@@ -4,7 +4,7 @@
  * File:    Report.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,19 @@ package de.fhhannover.inform.trust.ironvas;
 import java.util.List;
 
 /**
- * Simple POJO to store information related to a report of an OpenVAS
- * task.
- * 
+ * Simple POJO to store information related to a report of an OpenVAS task.
+ *
  * @author Ralf Steuerwald
  *
  */
 public class Report {
-	
-	public final String taskId;
-	public final List<Vulnerability> vulnerabilities;
-	
-	public Report(String taskId, List<Vulnerability> vulnerabilities) {
-		super();
-		this.taskId = taskId;
-		this.vulnerabilities = vulnerabilities;
-	}
+
+    public final String taskId;
+    public final List<Vulnerability> vulnerabilities;
+
+    public Report(String taskId, List<Vulnerability> vulnerabilities) {
+        super();
+        this.taskId = taskId;
+        this.vulnerabilities = vulnerabilities;
+    }
 }

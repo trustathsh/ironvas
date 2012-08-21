@@ -13,7 +13,7 @@
             <unpack>false</unpack>
         </dependencySet>
     </dependencySets>
-	
+
 	<files>
 		<file>
 			<source>${basedir}/src/main/templates/start.sh</source>

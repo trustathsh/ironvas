@@ -124,7 +124,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -143,10 +143,10 @@
                             <mainClass>de.fhhannover.inform.trust.ironvas.Ironvas</mainClass>
                         </manifest>
                     </archive>
- -->                
+ -->
  				</configuration>
             </plugin>
-			
+
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>

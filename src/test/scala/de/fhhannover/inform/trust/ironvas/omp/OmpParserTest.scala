@@ -4,7 +4,7 @@
  * File:    OmpParserTest.scala
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -31,189 +31,187 @@ import org.junit.runners.Suite
 
 class OmpParserTest {
 
-    var parser: OmpParser = _
-        
-    @Before
-    def setUp() {
-        parser = new OmpParser
-    }
-        
-    @Test
-    def testParseDateValidValues() {
-        val dates = Map(
-            "Thu Apr 7 16:28:52 2011"  -> (3, 7,  16, 28, 52, 2011),
-            "Tue Aug 25 21:48:25 2009" -> (7, 25, 21, 48, 25, 2009),
-            "Wed Jun 30 21:49:08 1993" -> (5, 30, 21, 49, 8, 1993),
-            "Wed Mar  7 21:27:59 2012" -> (2, 7,  21, 27, 59, 2012)
-            )
-        for (item <- dates) {
-            item match {
-                case (dateString, (month, day, hour, minute, second, year)) => {
-                    val date = parser.parseDate(dateString)
-                    val cal = Calendar.getInstance()
-                    cal.setTime(date)
-                    
-                    assertEquals(cal.get(Calendar.MONTH), month)
-                    assertEquals(cal.get(Calendar.DAY_OF_MONTH), day)
-                    assertEquals(cal.get(Calendar.HOUR_OF_DAY), hour)
-                    assertEquals(cal.get(Calendar.MINUTE), minute)
-                    assertEquals(cal.get(Calendar.SECOND), second)
-                    assertEquals(cal.get(Calendar.YEAR), year)
-                }
-            }
-        }
-    }
-    
-    @Test
-    def testParseDateMalformedValues() {
-        val dates = List(
-                "",
-                "somestring",
-                "ThuApr 7 16:28:52 2011", // missing space
-                "Tue Aug 21:48:25 2009", // missing day
-                "Wed Mar  7 21:27:59" // missing year
-                )
-        for (item <- dates) {
-	        val date = parser.parseDate(item)
-	        assertEquals(0, date.getTime())
-        }
-    }
+  var parser: OmpParser = _
 
-    @Test
-    def testParseDateEquals() {
-        val date1 = parser.parseDate("Thu Apr 7 16:28:52 2011")
-        val date2 = parser.parseDate("Thu Apr 7 16:28:52 2011")
-        assertEquals(date1, date2)
-        assertEquals(date2, date1)
-    }
-    
-    @Test
-    def testStatusOKSingleTag() {
-        val response = """<some_command status="200" status_text="OK"/>"""
-        val (code, text) = parser.status(response)
-        assertEquals(code, 200)
-        assertEquals(text, "OK")
-    }
-    
-    @Test
-    def testStatusOKDocument() {
-        val (code, text) = parser.status(Responses.getReports)
-        assertEquals(code, 200)
-        assertEquals(text, "OK")
-    }
-    
-    @Test
-    def testStatusMissing() {
-        val response = """<some_command />"""
-        val (code, text) = parser.status(response)
-        assertEquals(700, code)
-        assertEquals("Parser Error", text)
-    }
-    
-    @Test
-    def testAuthenticateResponse() {
-        val response = """<authenticate_response status="200" status_text="OK"/>"""
-        val (code, text) = parser.authenticateResponse(response)
-        assertEquals(code, 200)
-        assertEquals(text, "OK")
-    }
-    
-    @Test
-    def testGetTasksResponseElementSize() {
-    	val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
-    	assertEquals(3, tasks.size)
-    }
-    
-    @Test
-    def testGetTasksResponseLastReports() {
-    	val lastReportIds = List(
-    	    "3f892e8b-2d6c-4ce4-ad36-d6ccd9e9779c",
-    	    "b1409e73-621d-4cc2-9578-3bda5c2a89d8",
-    	    "ff8cd5e6-c3e4-4d0a-bc9a-18e401430a8a")
-      
-    	val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
-    	for (task <- tasks) {
-    		assertTrue(lastReportIds.contains(task.lastReportId))
-    	}
-    }
-    
-    @Test
-    def testGetReportsResponseElementSize() {
-        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
-            
-        // we expect 2 reports
-        assertTrue(content.length == 2)
-        
-        // the first report contains 10 elements
-        assertTrue(content.first.length == 10)
-        
-        // the second report contains 2 elements
-        assertTrue(content.last.length == 2)
-    }
-    
-    @Test
-    def testGetReportsResponseVulnerabilityIds() {
-        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
-        val lastReport = content.last
-        val ids = List(
-                "2f502c62-348d-489d-a3ba-9f46b33083a7",
-                "3c0c3500-27a2-48b3-8600-22f83f8f923e")
-        val zipped = lastReport.zip(ids)
-        for ((vulnerability, id) <- zipped) {
-        	assertEquals(id, vulnerability.getId())
+  @Before
+  def setUp() {
+    parser = new OmpParser
+  }
+
+  @Test
+  def testParseDateValidValues() {
+    val dates = Map(
+      "Thu Apr 7 16:28:52 2011" -> (3, 7, 16, 28, 52, 2011),
+      "Tue Aug 25 21:48:25 2009" -> (7, 25, 21, 48, 25, 2009),
+      "Wed Jun 30 21:49:08 1993" -> (5, 30, 21, 49, 8, 1993),
+      "Wed Mar  7 21:27:59 2012" -> (2, 7, 21, 27, 59, 2012))
+    for (item <- dates) {
+      item match {
+        case (dateString, (month, day, hour, minute, second, year)) => {
+          val date = parser.parseDate(dateString)
+          val cal = Calendar.getInstance()
+          cal.setTime(date)
+
+          assertEquals(cal.get(Calendar.MONTH), month)
+          assertEquals(cal.get(Calendar.DAY_OF_MONTH), day)
+          assertEquals(cal.get(Calendar.HOUR_OF_DAY), hour)
+          assertEquals(cal.get(Calendar.MINUTE), minute)
+          assertEquals(cal.get(Calendar.SECOND), second)
+          assertEquals(cal.get(Calendar.YEAR), year)
         }
+      }
     }
-    
-    @Test
-    def testGetReportsResponseNvtOid() {
-        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
-        val lastReport = content.last
-        val ids = List(
-                "1.3.6.1.4.1.25623.1.0.900675",
-                "1.3.6.1.4.1.25623.1.0.902401")
-        val zipped = lastReport.zip(ids)
-        for ((vulnerability, id) <- zipped) {
-        	assertEquals(id, vulnerability.getNvt().getOid())
-        }
+  }
+
+  @Test
+  def testParseDateMalformedValues() {
+    val dates = List(
+      "",
+      "somestring",
+      "ThuApr 7 16:28:52 2011", // missing space
+      "Tue Aug 21:48:25 2009", // missing day
+      "Wed Mar  7 21:27:59" // missing year
+      )
+    for (item <- dates) {
+      val date = parser.parseDate(item)
+      assertEquals(0, date.getTime())
     }
-    
-    @Test
-    def testGetReportsResponseNvtName() {
-        val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
-        val lastReport = content.last
-        val names = List(
-                "Mutt Version Detection",
-                "Adobe Flash Player Remote Memory Corruption Vulnerability (Linux)")
-        val zipped = lastReport.zip(names)
-        for ((vulnerability, name) <- zipped) {
-        	assertEquals(name, vulnerability.getNvt().getName())
-        }
+  }
+
+  @Test
+  def testParseDateEquals() {
+    val date1 = parser.parseDate("Thu Apr 7 16:28:52 2011")
+    val date2 = parser.parseDate("Thu Apr 7 16:28:52 2011")
+    assertEquals(date1, date2)
+    assertEquals(date2, date1)
+  }
+
+  @Test
+  def testStatusOKSingleTag() {
+    val response = """<some_command status="200" status_text="OK"/>"""
+    val (code, text) = parser.status(response)
+    assertEquals(code, 200)
+    assertEquals(text, "OK")
+  }
+
+  @Test
+  def testStatusOKDocument() {
+    val (code, text) = parser.status(Responses.getReports)
+    assertEquals(code, 200)
+    assertEquals(text, "OK")
+  }
+
+  @Test
+  def testStatusMissing() {
+    val response = """<some_command />"""
+    val (code, text) = parser.status(response)
+    assertEquals(700, code)
+    assertEquals("Parser Error", text)
+  }
+
+  @Test
+  def testAuthenticateResponse() {
+    val response = """<authenticate_response status="200" status_text="OK"/>"""
+    val (code, text) = parser.authenticateResponse(response)
+    assertEquals(code, 200)
+    assertEquals(text, "OK")
+  }
+
+  @Test
+  def testGetTasksResponseElementSize() {
+    val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
+    assertEquals(3, tasks.size)
+  }
+
+  @Test
+  def testGetTasksResponseLastReports() {
+    val lastReportIds = List(
+      "3f892e8b-2d6c-4ce4-ad36-d6ccd9e9779c",
+      "b1409e73-621d-4cc2-9578-3bda5c2a89d8",
+      "ff8cd5e6-c3e4-4d0a-bc9a-18e401430a8a")
+
+    val (_, tasks) = parser.getTasksResponse(Responses.getTasks)
+    for (task <- tasks) {
+      assertTrue(lastReportIds.contains(task.lastReportId))
     }
-    
-    @Test
-    def testParseCvssBaseValidValues() {
-        assertTrue(parser.parseCvssBase("1.0") == 1.0f)
-        assertTrue(parser.parseCvssBase("3.5") == 3.5f)
-        assertTrue(parser.parseCvssBase("4.2") == 4.2f)
+  }
+
+  @Test
+  def testGetReportsResponseElementSize() {
+    val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+
+    // we expect 2 reports
+    assertTrue(content.length == 2)
+
+    // the first report contains 10 elements
+    assertTrue(content.first.length == 10)
+
+    // the second report contains 2 elements
+    assertTrue(content.last.length == 2)
+  }
+
+  @Test
+  def testGetReportsResponseVulnerabilityIds() {
+    val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+    val lastReport = content.last
+    val ids = List(
+      "2f502c62-348d-489d-a3ba-9f46b33083a7",
+      "3c0c3500-27a2-48b3-8600-22f83f8f923e")
+    val zipped = lastReport.zip(ids)
+    for ((vulnerability, id) <- zipped) {
+      assertEquals(id, vulnerability.getId())
     }
-    
-    @Test
-    def testParseCvssBaseMalformedValues() {
-    	assertTrue(parser.parseCvssBase("3.5malformed") == -1.0f)
-    	assertTrue(parser.parseCvssBase("somestring") == -1.0f)
+  }
+
+  @Test
+  def testGetReportsResponseNvtOid() {
+    val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+    val lastReport = content.last
+    val ids = List(
+      "1.3.6.1.4.1.25623.1.0.900675",
+      "1.3.6.1.4.1.25623.1.0.902401")
+    val zipped = lastReport.zip(ids)
+    for ((vulnerability, id) <- zipped) {
+      assertEquals(id, vulnerability.getNvt().getOid())
     }
-    
-    @Test
-    def testParseCvssBaseEmptyValues() {
-    	assertTrue(parser.parseCvssBase("") == 0.0f)
-    	assertTrue(parser.parseCvssBase("None") == 0.0f)
+  }
+
+  @Test
+  def testGetReportsResponseNvtName() {
+    val ((_, _), content) = parser.getReportsResponse(Responses.getReports)
+    val lastReport = content.last
+    val names = List(
+      "Mutt Version Detection",
+      "Adobe Flash Player Remote Memory Corruption Vulnerability (Linux)")
+    val zipped = lastReport.zip(names)
+    for ((vulnerability, name) <- zipped) {
+      assertEquals(name, vulnerability.getNvt().getName())
     }
-    
+  }
+
+  @Test
+  def testParseCvssBaseValidValues() {
+    assertTrue(parser.parseCvssBase("1.0") == 1.0f)
+    assertTrue(parser.parseCvssBase("3.5") == 3.5f)
+    assertTrue(parser.parseCvssBase("4.2") == 4.2f)
+  }
+
+  @Test
+  def testParseCvssBaseMalformedValues() {
+    assertTrue(parser.parseCvssBase("3.5malformed") == -1.0f)
+    assertTrue(parser.parseCvssBase("somestring") == -1.0f)
+  }
+
+  @Test
+  def testParseCvssBaseEmptyValues() {
+    assertTrue(parser.parseCvssBase("") == 0.0f)
+    assertTrue(parser.parseCvssBase("None") == 0.0f)
+  }
+
 }
 
-
 object Responses {
-  
+
   val getTasks = """
 <get_tasks_response status="200" status_text="OK">
   <task_count>3</task_count>
@@ -386,8 +384,7 @@ object Responses {
   </task>
 </get_tasks_response>
     """
-  
-  
+
   val getTargets = """
 <get_targets_response status="200" status_text="OK">
   <target id="b493b7a8-7489-11df-a3ec-002264764cea">
@@ -445,9 +442,8 @@ object Responses {
   </target>
 </get_targets_response>
     """
-  
-  
-    val getReports = """
+
+  val getReports = """
     <get_reports_response status="200" status_text="OK">
 	<report id="0197e8aa-ec8f-4150-8d88-bb65f377b097" format_id="d5da9f67-8551-4e51-807b-b6a873d70e34" extension="xml" content_type="text/xml">
 		<report id="0197e8aa-ec8f-4150-8d88-bb65f377b097">
@@ -607,7 +603,7 @@ object Responses {
 			<scan_end>Thu Apr  7 16:28:52 2011</scan_end>
 		</report>
 	</report>
-        
+
    <report id="343435d6-91b0-11de-9478-ffd71f4c6f30" format_id="d5da9f67-8551-4e51-807b-b6a873d70e34" extension="xml" content_type="text/xml">
 		<report id="343435d6-91b0-11de-9478-ffd71f4c6f30">
 			<report_format></report_format>
@@ -631,7 +627,7 @@ object Responses {
 					<threat>Low</threat>
 					<description>Mutt version 1.4.2.2i running at location /usr/bin/mutt was detected on the host</description>
 				</result>
-        
+
         				<result id="3c0c3500-27a2-48b3-8600-22f83f8f923e">
 					<subnet>10.0.0.101</subnet>
 					<host>10.0.0.101</host>

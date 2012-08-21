@@ -4,7 +4,7 @@
  * File:    OmpException.scala
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ package de.fhhannover.inform.trust.ironvas.omp
 
 /**
  * This class represents a failure in the processing of OMP.
- * 
+ *
  * @author Ralf Steuerwald
- * 
+ *
  * @constructor creates a new <code>OmpException</code>. The reason for the
  *              failure must be given as the message argument
  * @param message the reason for the failure
@@ -34,8 +34,8 @@ package de.fhhannover.inform.trust.ironvas.omp
  * @param cause another exception that caused this
  */
 class OmpException(
-		message: String,
-        val request: String = null,
-        val response: String = null,
-        cause: Throwable = null) extends Exception(message, cause) {
+  message: String,
+  val request: String = null,
+  val response: String = null,
+  cause: Throwable = null) extends Exception(message, cause) {
 }

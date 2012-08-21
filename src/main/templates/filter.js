@@ -6,21 +6,21 @@ importPackage(Packages.de.fhhannover.inform.trust.ironvas);
  * discarded from further processing.
  */
 function filter(vulnerability) {
-	return true; // default process all vulnerability
-	//return filterByThreatLevel(vulnerability);
+    return true; // default process all vulnerability
+    //return filterByThreatLevel(vulnerability);
 }
 
 
 //*****************************************************************************
 
 function filterByThreatLevel(vulnerability) {
-	var minLevel = ThreatLevel.Low;
+    var minLevel = ThreatLevel.Low;
 
-	if (vulnerability.getThreat().compareTo(minLevel) < 0) {
-		return false;
-	}
-	else {
-		return true;
-	}
+    if (vulnerability.getThreat().compareTo(minLevel) < 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 

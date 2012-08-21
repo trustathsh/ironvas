@@ -4,7 +4,7 @@
  * File:    Config.scala
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,5 @@
 package de.fhhannover.inform.trust.ironvas.omp
 
 case class Config(
-		id: String,
-		name: String
-)
+  id: String,
+  name: String)

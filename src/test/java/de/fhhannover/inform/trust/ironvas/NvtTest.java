@@ -4,7 +4,7 @@
  * File:    NvtTest.java
  *
  * Copyright (C) 2011-2012 Hochschule Hannover
- * Ricklinger Stadtweg 118, 30459 Hannover, Germany 
+ * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -30,76 +30,64 @@ import static org.junit.Assert.*;
 
 public class NvtTest {
 
-	private Nvt n1Equalsn2;
-	private Nvt n2Equalsn1;
-	private Nvt n3;
-	
-	@Before
-	public void setUp() {
-		n1Equalsn2 = new Nvt(
-				"1.3.6.1.4.1.25623.1.0.800615",
-				"Cscope putstring Multiple Buffer Overflow vulnerability",
-				9.3f,
-				RiskfactorLevel.Critical,
-				"CVE-2009-1577",
-				"NOBID");
-		n2Equalsn1 = new Nvt(
-				"1.3.6.1.4.1.25623.1.0.800615",
-				"Cscope putstring Multiple Buffer Overflow vulnerability",
-				9.3f,
-				RiskfactorLevel.Critical,
-				"CVE-2009-1577",
-				"NOBID");
-		n3 = new Nvt(
-				"3.3.6.1.4.1.25623.1.0.800615",
-				"Cscope putstring Multiple Buffer Overflow vulnerability",
-				9.3f,
-				RiskfactorLevel.Critical,
-				"CVE-2009-1577",
-				"NOBID");
-	}
+    private Nvt n1Equalsn2;
+    private Nvt n2Equalsn1;
+    private Nvt n3;
 
-	@Test
-	public void testEquals() {
-		assertEquals(n1Equalsn2, n2Equalsn1);
-		assertFalse(n1Equalsn2.equals(n3));
-	}
-	
-	@Test
-	public void testHashCode() {
-		assertEquals(n1Equalsn2.hashCode(), n2Equalsn1.hashCode());
-		assertFalse(n1Equalsn2.hashCode() == n3.hashCode());
-	}
-	
-	@Test
-	public void testGetOid() {
-		assertEquals("3.3.6.1.4.1.25623.1.0.800615", n3.getOid());
-	}
-	
-	@Test
-	public void testGetName() {
-		assertEquals("Cscope putstring Multiple Buffer Overflow vulnerability", n3.getName());
-	}
-	
-	@Test
-	public void testGetCvss_base() {
-		assertEquals(9.3f, n3.getCvss_base(), 0.00001);
-	}
-	
-	@Test
-	public void testGetRisk_factor() {
-		assertEquals(RiskfactorLevel.Critical, n3.getRisk_factor());
-	}
-	
-	@Test
-	public void testGetCve() {
-		assertEquals("CVE-2009-1577", n3.getCve());
-	}
-	
-	@Test
-	public void testGetBid() {
-		assertEquals("NOBID", n3.getBid());
-	}
-	
-	
+    @Before
+    public void setUp() {
+        n1Equalsn2 = new Nvt("1.3.6.1.4.1.25623.1.0.800615",
+                "Cscope putstring Multiple Buffer Overflow vulnerability",
+                9.3f, RiskfactorLevel.Critical, "CVE-2009-1577", "NOBID");
+        n2Equalsn1 = new Nvt("1.3.6.1.4.1.25623.1.0.800615",
+                "Cscope putstring Multiple Buffer Overflow vulnerability",
+                9.3f, RiskfactorLevel.Critical, "CVE-2009-1577", "NOBID");
+        n3 = new Nvt("3.3.6.1.4.1.25623.1.0.800615",
+                "Cscope putstring Multiple Buffer Overflow vulnerability",
+                9.3f, RiskfactorLevel.Critical, "CVE-2009-1577", "NOBID");
+    }
+
+    @Test
+    public void testEquals() {
+        assertEquals(n1Equalsn2, n2Equalsn1);
+        assertFalse(n1Equalsn2.equals(n3));
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(n1Equalsn2.hashCode(), n2Equalsn1.hashCode());
+        assertFalse(n1Equalsn2.hashCode() == n3.hashCode());
+    }
+
+    @Test
+    public void testGetOid() {
+        assertEquals("3.3.6.1.4.1.25623.1.0.800615", n3.getOid());
+    }
+
+    @Test
+    public void testGetName() {
+        assertEquals("Cscope putstring Multiple Buffer Overflow vulnerability",
+                n3.getName());
+    }
+
+    @Test
+    public void testGetCvss_base() {
+        assertEquals(9.3f, n3.getCvss_base(), 0.00001);
+    }
+
+    @Test
+    public void testGetRisk_factor() {
+        assertEquals(RiskfactorLevel.Critical, n3.getRisk_factor());
+    }
+
+    @Test
+    public void testGetCve() {
+        assertEquals("CVE-2009-1577", n3.getCve());
+    }
+
+    @Test
+    public void testGetBid() {
+        assertEquals("NOBID", n3.getBid());
+    }
+
 }

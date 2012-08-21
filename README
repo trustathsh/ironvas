@@ -39,11 +39,11 @@ ironvas consists of two elements:
   If the PDP removes the "request-for-investigation"-metadata from the IP
   address, ironvas also removes the scan task (and with it the report) from
   OpenVAS.
-  
+
 ironvas is avaiable in two versions, the binary package (`ironvas-x.x.x-bin.zip`)
 is ready to run, all you need is to configure it to your needs.
 If you like to build ironvas by your own you can use the source package
-(`ironvas-x.x.x-src.zip`). 
+(`ironvas-x.x.x-src.zip`).
 
 
 Requirements
@@ -65,7 +65,7 @@ To setup the binary package you need to import the OpenVAS and MAP server
 certificates into `ironvas.jks`.
 On a Ubuntu installation of OpenVAS you can find the OpenVAS certificate in
 `/var/lib/openvas/CA/servercert.pem`. If you want to use ironvas with irond
-the keystores of both are configured with ready-to-use testing certificates. 
+the keystores of both are configured with ready-to-use testing certificates.
 
 The remaining configuration parameters can be done through the
 `configuration.properties` file in the ironvas package.
