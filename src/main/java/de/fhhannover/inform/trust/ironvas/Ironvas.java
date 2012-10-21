@@ -85,8 +85,18 @@ public class Ironvas implements Runnable {
 
         converter = createConverter(ssrc, omp);
         handler = new VulnerabilityHandler(ssrc, converter);
-        fetcher = new VulnerabilityFetcher(handler, omp,
-                Configuration.publishInterval(), new ScriptableFilter());
+
+        VulnerabilityFilter vulnerabilityFilter = null;
+        try {
+            vulnerabilityFilter = new ScriptableFilter();
+            fetcher = new VulnerabilityFetcher(handler, omp,
+                    Configuration.publishInterval(), vulnerabilityFilter);
+        } catch (FilterInitializationException e) {
+            logger.warning("cloud not load filter.js, falling back to no " +
+                    "filtering");
+            fetcher = new VulnerabilityFetcher(handler, omp,
+                        Configuration.publishInterval());
+        }
 
         subscriber = new Subscriber(omp, ssrc, Configuration.subscriberPdp(),
                 Configuration.subscriberNamePrefix(),
