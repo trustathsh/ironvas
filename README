@@ -12,7 +12,7 @@ ironvas consists of two elements:
   an OpenVAS server, converts them into IF-MAP metadata
   (currently "event"-metadata) and finally publishes them into a MAP server.
   ironvas takes care to not flood the MAPS with
-  redundant information, furthermore you can specify a filter (in 'filter.js')
+  redundant information, furthermore you can specify a filter (in `filter.js`)
   for the vulnerabilities to publish.
   If a scan report is deleted from the OpenVAS server, ironvas will purge all
   published metadata, associated with the deleted report, from the MAPS.
@@ -82,7 +82,7 @@ Have a look at the comments in `configuration.properties` for more details.
 Building
 ========
 Before you can build ironvas (if you have downloaded the source package)
-you need to install ifmapj in your local Maven
+you need to install ifmapj version 0.1.4 in your local Maven
 repository. To do so download ifmapj from the [Trust@FHH website] [3], unzip it
 and execute
 
