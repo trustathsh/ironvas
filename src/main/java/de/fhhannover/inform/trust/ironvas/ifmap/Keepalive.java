@@ -27,6 +27,13 @@ import de.fhhannover.inform.trust.ifmapj.channel.SSRC;
 import de.fhhannover.inform.trust.ifmapj.exception.IfmapErrorResult;
 import de.fhhannover.inform.trust.ifmapj.exception.IfmapException;
 
+/**
+ * A {@link Keepalive} can be used to keep an IF-MAP connection alive, by
+ * continuously sending a re-new session request to the MAPS.
+ *
+ * @author Ralf Steuerwald
+ *
+ */
 public class Keepalive implements Runnable {
 
     private static final Logger logger = Logger.getLogger(Keepalive.class
@@ -40,6 +47,15 @@ public class Keepalive implements Runnable {
      */
     private int interval;
 
+    /**
+     * Creates a new {@link Keepalive} object which can be used to keep
+     * the connection associated with the given {@link SSRC} alive. The
+     * connection has to be established before.
+     *
+     * @param ssrc      the session to keep alive
+     * @param interval  the interval in which re-new session request will be
+     *                   send
+     */
     public Keepalive(SSRC ssrc, int interval) {
         this.ssrc = ssrc;
         this.interval = interval;
