@@ -24,6 +24,7 @@ package de.fhhannover.inform.trust.ironvas.converter;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +231,8 @@ public class EsukomFeatureConverter implements Converter {
 
         feature.setAttributeNS(null, "ifmap-cardinality", "multiValue");
         feature.setAttribute("ctxp-timestamp",
-                dateFormat.format(v.getTimestamp()));
+//                dateFormat.format(v.getTimestamp()));
+        		dateFormat.format(new Date()));
 
         Element idElement = doc.createElement("id");
         idElement.setTextContent(id);
