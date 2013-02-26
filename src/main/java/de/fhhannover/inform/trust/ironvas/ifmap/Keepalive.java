@@ -70,13 +70,6 @@ public class Keepalive implements Runnable {
                 Thread.sleep(interval * 1000);
             }
         } catch (IfmapException e) {
-            // Catch every exception originated in ifmapj and stop running.
-
-            // TODO: Future implementation/enhancements may notify the
-            // other threads about the failed ifmap operation (after a
-            // successful reconnect), so that they have the chance to
-            // restore their ifmap status (publish or subscribe again).
-
             logger.severe("renewSession failed: " + e.getMessage());
         } catch (IfmapErrorResult e) {
             logger.severe("renewSession failed: " + e.getMessage());

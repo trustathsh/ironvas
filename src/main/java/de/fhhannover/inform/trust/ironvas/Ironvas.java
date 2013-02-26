@@ -102,6 +102,7 @@ public class Ironvas implements Runnable {
                 Configuration.subscriberNamePrefix(),
                 Configuration.subscriberConfig());
 
+        // TODO: introduce supervisor thread to control the different sub-threads (clean exit, error handling, ...)
         handlerThread = new Thread(handler, "handler-thread");
         fetcherThread = new Thread(fetcher, "fetcher-thread");
         subscriberThread = new Thread(subscriber, "subscriber-thread");

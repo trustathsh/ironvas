@@ -144,7 +144,7 @@ class OmpParserTest {
     assertTrue(content.length == 2)
 
     // the first report contains 10 elements
-    assertTrue(content.first.length == 10)
+    assertTrue(content.head.length == 10)
 
     // the second report contains 2 elements
     assertTrue(content.last.length == 2)

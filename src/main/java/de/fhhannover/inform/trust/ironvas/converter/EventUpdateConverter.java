@@ -72,7 +72,7 @@ public class EventUpdateConverter implements Converter {
                 0, // confidence TODO define
                 mapSignificance(v.getNvt().getRisk_factor()), // significance
                 EventType.cve, // type
-                v.getId(), // other-type-definition TODO
+                v.getId(), // other-type-definition
                 v.getDescription(), // information
                 v.getNvt().getCve() // vulnerability-uri
                 );
@@ -89,33 +89,9 @@ public class EventUpdateConverter implements Converter {
 
         String filter = String.format("meta:event[@ifmap-publisher-id='%s' "
                 + "and other-type-definition='%s']",
-
-        context.getIfmapPublisherId(), v.getId());
+                context.getIfmapPublisherId(), v.getId());
 
         IpAddress ip = Identifiers.createIp4(v.getHost());
-        // String filter = String.format(
-        // "meta:event[@ifmap-publisher-id='%s' "+
-        // "and name='%s' "+
-        // "and discovered-time='%s' "+
-        // "and discoverer-id='%s' "+
-        // "and magnitude='%s' " +
-        // "and confidence='0' " +
-        // "and significance='%s' " +
-        // "and type='%s' "+
-        // "and other-type-definition='' " +
-        // "and information='%s' "+
-        // "and vulnerability-uri='%s']",
-        //
-        // publisherId,
-        // v.getNvt().getName(),
-        // dateFormat.format(v.getTimestamp()),
-        // openVasServerId,
-        // (int)((v.getNvt().getCvss_base() * 10)+0.5),
-        // mapSignificance(v.getNvt().getRisk_factor()),
-        // EventType.cve,
-        // v.getDescription(),
-        // v.getNvt().getCve());
-
         delete.addNamespaceDeclaration("meta", IfmapStrings.STD_METADATA_NS_URI);
         delete.setFilter(filter);
         delete.setIdentifier1(ip);

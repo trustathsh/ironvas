@@ -22,7 +22,6 @@
 package de.fhhannover.inform.trust.ironvas.subscriber
 
 import java.util.logging.Logger
-import scala.collection.JavaConversions.asBuffer
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Map
@@ -178,7 +177,7 @@ class Subscriber(
         logger.info("received delete for IP address " + ip)
 
         val target = cache(ip.getValue())
-        omp.deleteTask(target.tasks.first.id)
+        omp.deleteTask(target.tasks.head.id)
         omp.deleteTarget(target.id)
 
         cache.remove(ip.getValue())
@@ -193,7 +192,7 @@ class Subscriber(
   def filterSearchResult(searchResult: SearchResult) = {
     val predicate = (r: ResultItem) => !r.getMetadata().isEmpty()
 
-    val scalaBuffer = asBuffer(searchResult.getResultItems())
+    val scalaBuffer = asScalaBuffer(searchResult.getResultItems())
     val filtered = scalaBuffer.filter(predicate)
 
     filtered.toList

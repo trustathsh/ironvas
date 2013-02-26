@@ -23,14 +23,15 @@ package de.fhhannover.inform.trust.ironvas.omp
 
 import java.util.Date
 import java.util.GregorianCalendar
-
 import scala.xml.Elem
 import scala.xml.XML
-
 import de.fhhannover.inform.trust.ironvas.Nvt
 import de.fhhannover.inform.trust.ironvas.RiskfactorLevel
 import de.fhhannover.inform.trust.ironvas.ThreatLevel
 import de.fhhannover.inform.trust.ironvas.Vulnerability
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.text.ParseException
 
 /**
  * <code>OmpParser</code> is capable of parsing the OpenVAS Management Protocol
@@ -50,6 +51,15 @@ class OmpParser {
    * because of an non existing element/attribute.
    */
 
+  /* OpenVAS uses C ctime format for dates.
+   * Abbreviations for month are "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+   * "Jul", "Aug", "Sep", "Oct", "Nov", and "Dec".
+   *
+   * Example: "Wed Jun 30 21:49:08 1993"
+   */
+  val locale = Locale.ENGLISH
+  val cDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", locale)
+
   def getVersionResponse(xml: Elem) = {
     val statusCode = status(xml)
     val version = (xml \ "version").text
@@ -57,7 +67,7 @@ class OmpParser {
     (statusCode, version)
   }
 
-  def getVersionResponse(xmlString: String): Tuple2[Tuple2[Int, String], String] = {
+  def getVersionResponse(xmlString: String): ((Int, String), String) = {
     val xml = XML.loadString(xmlString)
     getVersionResponse(xml)
   }
@@ -66,7 +76,7 @@ class OmpParser {
     status(xml)
   }
 
-  def authenticateResponse(xmlString: String): Tuple2[Int, String] = {
+  def authenticateResponse(xmlString: String): (Int, String) = {
     val xml = XML.loadString(xmlString)
     authenticateResponse(xml)
   }
@@ -92,7 +102,7 @@ class OmpParser {
     (statusCode, tasks)
   }
 
-  def getTasksResponse(xmlString: String): Tuple2[Tuple2[Int, String], Seq[Task]] = {
+  def getTasksResponse(xmlString: String): ((Int, String), Seq[Task]) = {
     val xml = XML.loadString(xmlString)
     getTasksResponse(xml)
   }
@@ -265,46 +275,20 @@ class OmpParser {
     createTaskResponse(xml)
   }
 
-  val dateExtractorRE = """\w+\s+(\w+)\s+(\d{1,2})\s+(\d\d):(\d\d):(\d\d)\s+(\d\d\d\d)""".r
-
   /**
    * Convert a <code>ctime</code> date string into a <code>Date</code> object.
    * The date string contains no time zone information, it is assumed that
-   * the default locale is valid for the source of the date string as well as
-   * the target.
+   * the locale "ENGLISH" is valid for the input.
    *
    * If the parsing fails the method returns January 1, 1970, 00:00:00 GMT.
    *
    * @param dateString the date to parse
    * @return the <code>Date</code> object
    */
-  def parseDate(dateString: String): Date = {
-    // Example: "Wed Jun 30 21:49:08 1993"
-
-    // TODO construct SimpleDateFormat with correct Locale to get rid of the regex
-    dateString match {
-      case dateExtractorRE(month, day, hour, minute, second, year) =>
-        month match {
-          case "Jan" => new GregorianCalendar(year.toInt, 0, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Feb" => new GregorianCalendar(year.toInt, 1, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Mar" => new GregorianCalendar(year.toInt, 2, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Apr" => new GregorianCalendar(year.toInt, 3, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "May" => new GregorianCalendar(year.toInt, 4, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Jun" => new GregorianCalendar(year.toInt, 5, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Jul" => new GregorianCalendar(year.toInt, 6, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Aug" => new GregorianCalendar(year.toInt, 7, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Sep" => new GregorianCalendar(year.toInt, 8, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Oct" => new GregorianCalendar(year.toInt, 9, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Nov" => new GregorianCalendar(year.toInt, 10, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case "Dec" => new GregorianCalendar(year.toInt, 11, day.toInt, hour.toInt, minute.toInt, second.toInt).getTime()
-          case _ => {
-            new Date(0)
-          }
-        }
-      case _ => {
-        new Date(0)
-      }
-    }
+  def parseDate(dateString: String): Date = try {
+    cDateFormat.parse(dateString)
+  } catch {
+    case e: ParseException => new Date(0)
   }
 
   /**

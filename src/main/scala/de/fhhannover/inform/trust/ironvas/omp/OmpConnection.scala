@@ -266,7 +266,7 @@ class OmpConnection(
 
       val latestReports = for (task <- tasksWithLastReport) yield {
         val (_, reports) = getReports(task.lastReportId)
-        (task, reports.first)
+        (task, reports.head)
       }
       latestReports
     }

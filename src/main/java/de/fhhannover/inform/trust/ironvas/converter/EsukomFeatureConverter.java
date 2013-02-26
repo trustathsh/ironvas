@@ -99,8 +99,6 @@ public class EsukomFeatureConverter implements Converter {
         try {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -187,9 +185,7 @@ public class EsukomFeatureConverter implements Converter {
                 createFeature("Threat", "quantitive", v.getNvt()
                         .getRisk_factor().toString(), v),
                 createFeature("Description", "arbitrary", v.getDescription(), v),
-                createFeature("CVE", "qualified", v.getNvt().getCve(), v), // TODO
-                                                                           // split
-                                                                           // "multi CVE"
+                createFeature("CVE", "qualified", v.getNvt().getCve(), v), // TODO split "multi CVE"
         };
         for (Document d : features) {
             PublishUpdate u = Requests.createPublishUpdate();
