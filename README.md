@@ -138,4 +138,4 @@ Feel free to fork/contribute.
 [2]: http://www.trustedcomputinggroup.org/developers/trusted_network_connect
 [3]: https://trust.inform.fh-hannover.de/joomla/index.php/downloads
 [4]: http://www.apache.org/licenses/LICENSE-2.0.html
-[githubrepo]:
+[githubrepo]: https://github.com/trustatfhh/ironvas
