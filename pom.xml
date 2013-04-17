@@ -168,6 +168,10 @@
                 <licenseName>apache_v2</licenseName>
                 <canUpdateDescription>true</canUpdateDescription>
                 <descriptionTemplate>${basedir}/src/license/description_template.ftl</descriptionTemplate>
+                <roots>
+                  <root>src/main/java</root>
+                  <root>src/test/java</root>
+                </roots>
               </configuration>
              <executions>
                <execution>
@@ -176,12 +180,6 @@
                    <goal>update-file-header</goal>
                  </goals>
                  <phase>process-sources</phase>
-                 <configuration>
-                   <roots>
-                     <root>src/main/java</root>
-                     <root>src/test/java</root>
-                   </roots>
-                 </configuration>
                </execution>
              </executions>
            </plugin>
