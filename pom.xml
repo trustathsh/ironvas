@@ -173,15 +173,6 @@
                   <root>src/test/java</root>
                 </roots>
               </configuration>
-             <executions>
-               <execution>
-                 <id>first</id>
-                 <goals>
-                   <goal>update-file-header</goal>
-                 </goals>
-                 <phase>process-sources</phase>
-               </execution>
-             </executions>
            </plugin>
 
 
