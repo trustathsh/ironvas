@@ -43,7 +43,7 @@
 			<email>trust@f4-i.fh-hannover.de</email>
 		</developer>
 	</developers>
-	
+
 	<contributors>
 		<contributor>
 			<name>Ralf Steuerwald</name>
@@ -61,49 +61,6 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>de.hshannover.f4.trust.ironvas.Ironvas</mainClass>
-								</transformer>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                    				<resource>configuration.properties</resource>
-                    				<file>src/main/resources/configuration.properties</file>
-                				</transformer>
-                				<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                    				<resource>ironvas.jks</resource>
-                    				<file>src/main/resources/ironvas.jks</file>
-                				</transformer>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-								<resource>filter.js</resource>
-								<file>src/main/resources/filter.js</file>
-								</transformer>
-                				<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                    				<resource>LICENSE</resource>
-                    				<file>LICENSE</file>
-                				</transformer>
-                				<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                    				<resource>NOTICE</resource>
-                    				<file>NOTICE</file>
-                				</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.scala-tools</groupId>
 				<artifactId>maven-scala-plugin</artifactId>
@@ -131,63 +88,56 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <configuration>
-                	<excludes>
-                		<exclude>*.properties</exclude>
-                		<exclude>*.jks</exclude>
-						<exclude>filter.js</exclude>
-                	</excludes>
-<!--
-                     <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>de.fhhannover.inform.trust.ironvas.Ironvas</mainClass>
-                        </manifest>
-                    </archive>
- -->
- 				</configuration>
-            </plugin>
-
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>de.hshannover.f4.trust.ironvas.Ironvas</mainClass>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Class-Path>.</Class-Path>
+						</manifestEntries>
+					</archive>
+					<descriptors>
+						<descriptor>src/main/assembly/bin.xml</descriptor>
+						<descriptor>src/main/assembly/src.xml</descriptor>
+						<descriptor>src/main/assembly/bundle.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2.2</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/src.xml</descriptor>
-                        <descriptor>src/main/assembly/bin.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>license-maven-plugin</artifactId>
-              <version>1.4</version>
-              <configuration>
-                <licenseName>apache_v2</licenseName>
-                <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                <canUpdateDescription>true</canUpdateDescription>
-                <descriptionTemplate>${basedir}/src/license/description_template.ftl</descriptionTemplate>
-                <roots>
-                  <root>src/main/java</root>
-                  <root>src/test/java</root>
-                  <root>src/main/scala</root>
-                  <root>src/test/scala</root>
-                </roots>
-                <extraExtensions>
-                	<scala>java</scala>
-                </extraExtensions>
-              </configuration>
-           </plugin>
-
-
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.4</version>
+				<configuration>
+					<licenseName>apache_v2</licenseName>
+					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+					<canUpdateDescription>true</canUpdateDescription>
+					<descriptionTemplate>${basedir}/src/license/description_template.ftl</descriptionTemplate>
+					<roots>
+						<root>src/main/java</root>
+						<root>src/test/java</root>
+						<root>src/main/scala</root>
+						<root>src/test/scala</root>
+					</roots>
+					<extraExtensions>
+						<scala>java</scala>
+					</extraExtensions>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -206,21 +156,18 @@
 			<artifactId>ifmapj</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.9.0</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
