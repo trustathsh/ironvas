@@ -7,13 +7,13 @@
 	</properties>
 
 	<!-- general project information -->
-	<groupId>de.fhhannover.inform.trust</groupId>
+	<groupId>de.hshannover.f4.trust</groupId>
 	<artifactId>ironvas</artifactId>
-	<version>0.1.1</version>
+	<version>0.1.2</version>
 	<packaging>jar</packaging>
 	<inceptionYear>2011</inceptionYear>
 	<name>ironvas</name>
-	<url>http://trust.inform.fh-hannover.de</url>
+	<url>http://trust.f4.hs-hannover.de</url>
 	<description>
 		ironvas is a *highly experimental* integration of Open Vulnerability
 		Assessment System (OpenVAS) into a MAP-Infrastructure. The integration
@@ -22,8 +22,8 @@
 		via IF-MAP.
 	</description>
 	<organization>
-		<name>Trust@FHH</name>
-		<url>http://trust.inform.fh-hannover.de</url>
+		<name>Trust@HsH</name>
+		<url>http://trust.f4.hs-hannover.de</url>
 	</organization>
 
 	<!-- the project license -->
@@ -39,10 +39,16 @@
 	<!-- the core developers of the project -->
 	<developers>
 		<developer>
-			<name>Ralf Steuerwald</name>
-			<email>ralf.steuerwald@stud.fh-hannover.de</email>
+			<name>Trust@HsH</name>
+			<email>trust@f4-i.fh-hannover.de</email>
 		</developer>
 	</developers>
+	
+	<contributors>
+		<contributor>
+			<name>Ralf Steuerwald</name>
+		</contributor>
+	</contributors>
 
 	<build>
 		<plugins>
@@ -70,7 +76,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>de.fhhannover.inform.trust.ironvas.Ironvas</mainClass>
+									<mainClass>de.hshannover.f4.trust.ironvas.Ironvas</mainClass>
 								</transformer>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                     				<resource>configuration.properties</resource>
@@ -166,12 +172,18 @@
               <version>1.4</version>
               <configuration>
                 <licenseName>apache_v2</licenseName>
+                <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                 <canUpdateDescription>true</canUpdateDescription>
                 <descriptionTemplate>${basedir}/src/license/description_template.ftl</descriptionTemplate>
                 <roots>
                   <root>src/main/java</root>
                   <root>src/test/java</root>
+                  <root>src/main/scala</root>
+                  <root>src/test/scala</root>
                 </roots>
+                <extraExtensions>
+                	<scala>java</scala>
+                </extraExtensions>
               </configuration>
            </plugin>
 
@@ -190,9 +202,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.fhhannover.inform.trust</groupId>
+			<groupId>de.hshannover.f4.trust</groupId>
 			<artifactId>ifmapj</artifactId>
-			<version>0.1.5</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>

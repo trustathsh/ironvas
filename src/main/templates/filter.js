@@ -1,5 +1,5 @@
 importPackage(Packages.java.lang);
-importPackage(Packages.de.fhhannover.inform.trust.ironvas);
+importPackage(Packages.de.hshannover.f4.trust.ironvas);
 
 /* The 'filter'-Method gets called by ironvas, if it returns
  * false for the given vulnerability the vulnerability is
