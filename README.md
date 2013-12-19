@@ -6,6 +6,8 @@ aims to share security related informations (vulnerabilities
 detected by OpenVAS) with other network components in the [TNC architecture] [2]
 via IF-MAP.
 
+[![Build Status](https://travis-ci.org/trustathsh/ironvas.png)](https://travis-ci.org/trustathsh/ironvas)
+
 ironvas consists of two elements:
 
 * One part - the "publisher" - simply fetches the latest scan reports stored in
@@ -40,7 +42,7 @@ ironvas consists of two elements:
   address, ironvas also removes the scan task (and with it the report) from
   OpenVAS.
 
-ironvas is avaiable in two versions, the binary package (`ironvas-x.x.x-bundle.zip`)
+The binary package (`ironvas-x.x.x-bundle.zip`) of ironvas
 is ready to run, all you need is to configure it to your needs.
 If you like to build ironvas by your own you can use the
 latest code from the [GitHub repository][githubrepo].
