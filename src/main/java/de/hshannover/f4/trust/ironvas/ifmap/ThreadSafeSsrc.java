@@ -7,28 +7,28 @@
  *    | | | |  | |_| \__ \ |_| | (_| |  _  |\__ \|  _  |
  *    |_| |_|   \__,_|___/\__|\ \__,_|_| |_||___/|_| |_|
  *                             \____/
- *
+ * 
  * =====================================================
- *
+ * 
  * Hochschule Hannover
  * (University of Applied Sciences and Arts, Hannover)
  * Faculty IV, Dept. of Computer Science
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany
- *
+ * 
  * Email: trust@f4-i.fh-hannover.de
  * Website: http://trust.f4.hs-hannover.de
- *
+ * 
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,7 +63,7 @@ import de.hshannover.f4.trust.ifmapj.messages.SubscribeRequest;
  */
 public class ThreadSafeSsrc implements SSRC {
 
-    private SSRC ssrc;
+    private SSRC mSsrc;
 
     /**
      * Creates a new thread safe {@link SSRC}.
@@ -80,128 +80,128 @@ public class ThreadSafeSsrc implements SSRC {
      */
     public ThreadSafeSsrc(String url, String user, String pass,
             TrustManager[] tms) throws InitializationException {
-        ssrc = IfmapJ.createSSRC(url, user, pass, tms);
+        mSsrc = IfmapJ.createSSRC(url, user, pass, tms);
     }
 
     public ThreadSafeSsrc(String url, KeyManager[] kms, TrustManager[] tms)
             throws InitializationException {
-        ssrc = IfmapJ.createSSRC(url, kms, tms);
+        mSsrc = IfmapJ.createSSRC(url, kms, tms);
     }
 
     @Override
     public synchronized String getSessionId() {
-        return ssrc.getSessionId();
+        return mSsrc.getSessionId();
     }
 
     @Override
     public synchronized void setSessionId(String sessionId) {
-        ssrc.setSessionId(sessionId);
+        mSsrc.setSessionId(sessionId);
     }
 
     @Override
     public synchronized String getPublisherId() {
-        return ssrc.getPublisherId();
+        return mSsrc.getPublisherId();
     }
 
     @Override
     public synchronized void setPublisherId(String publisherId) {
-        ssrc.setPublisherId(publisherId);
+        mSsrc.setPublisherId(publisherId);
     }
 
     @Override
     public synchronized Integer getMaxPollResSize() {
-        return ssrc.getMaxPollResSize();
+        return mSsrc.getMaxPollResSize();
     }
 
     @Override
     public synchronized void setMaxPollResSize(Integer mprs) {
-        ssrc.setMaxPollResSize(mprs);
+        mSsrc.setMaxPollResSize(mprs);
     }
 
     @Override
     public synchronized void closeTcpConnection() throws CommunicationException {
-        ssrc.closeTcpConnection();
+        mSsrc.closeTcpConnection();
     }
 
     @Override
     public synchronized void setGzip(boolean useGzip) {
-        ssrc.setGzip(useGzip);
+        mSsrc.setGzip(useGzip);
     }
 
     @Override
     public synchronized boolean usesGzip() {
-        return ssrc.usesGzip();
+        return mSsrc.usesGzip();
     }
 
     @Override
     public synchronized Result genericRequest(Request req)
             throws IfmapErrorResult, IfmapException {
-        return ssrc.genericRequest(req);
+        return mSsrc.genericRequest(req);
     }
 
     @Override
     public synchronized Result genericRequestWithSessionId(Request req)
             throws IfmapErrorResult, IfmapException {
-        return ssrc.genericRequestWithSessionId(req);
+        return mSsrc.genericRequestWithSessionId(req);
     }
 
     @Override
     public synchronized void newSession() throws IfmapErrorResult,
             IfmapException {
-        ssrc.newSession();
+        mSsrc.newSession();
     }
 
     @Override
     public synchronized void newSession(Integer maxPollResSize)
             throws IfmapErrorResult, IfmapException {
-        ssrc.newSession(maxPollResSize);
+        mSsrc.newSession(maxPollResSize);
     }
 
     @Override
     public synchronized void endSession() throws IfmapErrorResult,
             IfmapException {
-        ssrc.endSession();
+        mSsrc.endSession();
     }
 
     @Override
     public synchronized void renewSession() throws IfmapErrorResult,
             IfmapException {
-        ssrc.renewSession();
+        mSsrc.renewSession();
     }
 
     @Override
     public synchronized void purgePublisher() throws IfmapErrorResult,
             IfmapException {
-        ssrc.purgePublisher();
+        mSsrc.purgePublisher();
     }
 
     @Override
     public synchronized void purgePublisher(String publisherId)
             throws IfmapErrorResult, IfmapException {
-        ssrc.purgePublisher(publisherId);
+        mSsrc.purgePublisher(publisherId);
     }
 
     @Override
     public synchronized void publish(PublishRequest req)
             throws IfmapErrorResult, IfmapException {
-        ssrc.publish(req);
+        mSsrc.publish(req);
     }
 
     @Override
     public synchronized void subscribe(SubscribeRequest req)
             throws IfmapErrorResult, IfmapException {
-        ssrc.subscribe(req);
+        mSsrc.subscribe(req);
     }
 
     @Override
     public synchronized SearchResult search(SearchRequest req)
             throws IfmapErrorResult, IfmapException {
-        return ssrc.search(req);
+        return mSsrc.search(req);
     }
 
     @Override
     public synchronized ARC getArc() throws InitializationException {
-        return ssrc.getArc();
+        return mSsrc.getArc();
     }
 
 }

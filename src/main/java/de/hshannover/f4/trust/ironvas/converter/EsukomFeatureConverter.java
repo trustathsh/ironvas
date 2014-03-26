@@ -7,28 +7,28 @@
  *    | | | |  | |_| \__ \ |_| | (_| |  _  |\__ \|  _  |
  *    |_| |_|   \__,_|___/\__|\ \__,_|_| |_||___/|_| |_|
  *                             \____/
- *
+ * 
  * =====================================================
- *
+ * 
  * Hochschule Hannover
  * (University of Applied Sciences and Arts, Hannover)
  * Faculty IV, Dept. of Computer Science
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany
- *
+ * 
  * Email: trust@f4-i.fh-hannover.de
  * Website: http://trust.f4.hs-hannover.de
- *
+ * 
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,7 +55,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.hshannover.f4.trust.ifmapj.channel.SSRC;
 import de.hshannover.f4.trust.ifmapj.identifier.Device;
 import de.hshannover.f4.trust.ifmapj.identifier.Identifiers;
 import de.hshannover.f4.trust.ifmapj.identifier.Identity;
@@ -78,28 +77,28 @@ import de.hshannover.f4.trust.ironvas.Vulnerability;
  */
 public class EsukomFeatureConverter implements Converter {
 
-    final static String OTHER_TYPE_DEFINITION = "32939:category";
-    final static String NAMESPACE = "http://www.esukom.de/2012/ifmap-metadata/1";
-    final static String NAMESPACE_PREFIX = "esukom";
+	static final String OTHER_TYPE_DEFINITION = "32939:category";
+	static final String NAMESPACE = "http://www.esukom.de/2012/ifmap-metadata/1";
+	static final String NAMESPACE_PREFIX = "esukom";
 
     /**
      * The name for the root category of vulnerability related informations
      * under a device identifier.
      */
-    final static String ROOT_CATEGORY_NAME = "vulnerability-scan-result";
+	static final String ROOT_CATEGORY_NAME = "vulnerability-scan-result";
 
-    private static final Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(EsukomFeatureConverter.class.getName());
 
-    private DocumentBuilderFactory documentBuilderFactory;
-    private DocumentBuilder documentBuilder;
+    private DocumentBuilderFactory mDocumentBuilderFactory;
+    private DocumentBuilder mDocumentBuilder;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat(
+    private SimpleDateFormat mDateFormat = new SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ss");
 
-    private Context context;
+    private Context mContext;
 
-    private Map<String, Device> hostDeviceMaping = new HashMap<String, Device>();
+    private Map<String, Device> mHostDeviceMaping = new HashMap<String, Device>();
 
     /**
      * Creates a new {@link EsukomFeatureConverter}. The {@link SSRC} is needed
@@ -111,10 +110,10 @@ public class EsukomFeatureConverter implements Converter {
      * @param ssrc
      */
     public EsukomFeatureConverter() {
-        documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        mDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
 
         try {
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            mDocumentBuilder = mDocumentBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         }
@@ -134,14 +133,14 @@ public class EsukomFeatureConverter implements Converter {
                 Device dev = findDeviceForVulnerability(first);
 
                 if (dev != null) {
-                    logger.finer("found device " + dev + " for "
+                    LOGGER.finer("found device " + dev + " for "
                             + first.getHost());
                 } else {
-                    logger.finer("creating device for " + first.getHost());
+                    LOGGER.finer("creating device for " + first.getHost());
                     dev = Identifiers.createDev(new SecureRandom().nextInt()
                             + "");
                 }
-                hostDeviceMaping.put(first.getHost(), dev);
+                mHostDeviceMaping.put(first.getHost(), dev);
 
                 // create the "vulnerability-scan-result" root category
                 // for the current host
@@ -198,9 +197,9 @@ public class EsukomFeatureConverter implements Converter {
                 createFeature("Name", "qualified", v.getNvt().getName(), v),
                 createFeature("Port", "qualified", v.getPort(), v),
                 createFeature("Cvss-base", "quantitive", v.getNvt()
-                        .getCvss_base() + "", v),
+                        .getCvssBase() + "", v),
                 createFeature("Threat", "quantitive", v.getNvt()
-                        .getRisk_factor().toString(), v),
+                        .getRiskFactor().toString(), v),
                 createFeature("Description", "arbitrary", v.getDescription(), v),
                 createFeature("CVE", "qualified", v.getNvt().getCve(), v), // TODO split "multi CVE"
         };
@@ -238,14 +237,14 @@ public class EsukomFeatureConverter implements Converter {
      */
     private Document createFeature(String id, String type, String value,
             Vulnerability v) {
-        Document doc = documentBuilder.newDocument();
+        Document doc = mDocumentBuilder.newDocument();
         Element feature = doc.createElementNS(NAMESPACE, NAMESPACE_PREFIX
                 + ":feature");
 
         feature.setAttributeNS(null, "ifmap-cardinality", "multiValue");
         feature.setAttribute("ctxp-timestamp",
 //                dateFormat.format(v.getTimestamp()));
-        		dateFormat.format(new Date()));
+        		mDateFormat.format(new Date()));
 
         Element idElement = doc.createElement("id");
         idElement.setTextContent(id);
@@ -264,7 +263,7 @@ public class EsukomFeatureConverter implements Converter {
     }
 
     private Document createCategoryLink(String name) {
-        Document doc = documentBuilder.newDocument();
+        Document doc = mDocumentBuilder.newDocument();
         Element e = doc.createElementNS(NAMESPACE, NAMESPACE_PREFIX + ":"
                 + name);
         e.setAttributeNS(null, "ifmap-cardinality", "singleValue");
@@ -282,7 +281,7 @@ public class EsukomFeatureConverter implements Converter {
         for (List<Vulnerability> vulnerabilityList : byIp.values()) {
             if (vulnerabilityList.size() > 0) {
                 Vulnerability first = vulnerabilityList.get(0);
-                Device dev = hostDeviceMaping.get(first.getHost());
+                Device dev = mHostDeviceMaping.get(first.getHost());
 
                 for (Vulnerability v : vulnerabilityList) {
                     List<PublishElement> e = singleVulnerabilityDelete(v, dev);
@@ -307,7 +306,7 @@ public class EsukomFeatureConverter implements Converter {
         parentDelete.setIdentifier2(vulnerability);
         String filter = String.format(
                 "%s:subcategory-of[@ifmap-publisher-id='%s']",
-                NAMESPACE_PREFIX, context.getIfmapPublisherId());
+                NAMESPACE_PREFIX, mContext.getIfmapPublisherId());
         parentDelete.setFilter(filter);
         parentDelete.addNamespaceDeclaration(NAMESPACE_PREFIX, NAMESPACE);
 
@@ -318,7 +317,7 @@ public class EsukomFeatureConverter implements Converter {
         featureDelete.setIdentifier1(vulnerability);
         String featureFilter = String.format(
                 "%s:feature[@ifmap-publisher-id='%s']", NAMESPACE_PREFIX,
-                context.getIfmapPublisherId());
+                mContext.getIfmapPublisherId());
         featureDelete.setFilter(featureFilter);
         featureDelete.addNamespaceDeclaration(NAMESPACE_PREFIX, NAMESPACE);
         elements.add(featureDelete);
@@ -331,7 +330,7 @@ public class EsukomFeatureConverter implements Converter {
         if (context == null) {
             throw new IllegalArgumentException("context cannot be null");
         }
-        this.context = context;
+        this.mContext = context;
         return this;
     }
 
@@ -352,7 +351,7 @@ public class EsukomFeatureConverter implements Converter {
     private Device findDeviceForVulnerability(Vulnerability v) {
         String host = v.getHost();
         IpAddress ip = Identifiers.createIp4(host);
-        Device dev = context.getIfmapDeviceForIp(ip);
+        Device dev = mContext.getIfmapDeviceForIp(ip);
 
         return dev;
     }

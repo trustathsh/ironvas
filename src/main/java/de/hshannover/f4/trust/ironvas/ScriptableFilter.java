@@ -21,7 +21,7 @@
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ import javax.script.ScriptException;
  */
 public class ScriptableFilter implements VulnerabilityFilter {
 
-    private static final Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(ScriptableFilter.class.getName());
 
     private static final String SCRIPT = "/filter.js";
@@ -65,19 +65,16 @@ public class ScriptableFilter implements VulnerabilityFilter {
 
     private static final boolean DEFAULT_RESULT = true;
 
-    private ScriptEngineManager manager;
-    private ScriptEngine engine;
+    private ScriptEngineManager mManager;
+    private ScriptEngine mEngine;
 
     /**
      * Creates a new {@link ScriptableFilter} with a JavaScript engine and
      * uses a script named <tt>filter.js</tt> at the top of the classpath.
-     *
-     * @throws FilterInitializationException if something goes wrong while
-     *                                        setting up the filter
      */
     public ScriptableFilter() {
-        manager = new ScriptEngineManager();
-        engine = manager.getEngineByName("JavaScript");
+        mManager = new ScriptEngineManager();
+        mEngine = mManager.getEngineByName("JavaScript");
 
         InputStream inStream = getClass().getResourceAsStream(SCRIPT);
         if (inStream == null) {
@@ -87,25 +84,26 @@ public class ScriptableFilter implements VulnerabilityFilter {
                 .getResourceAsStream(SCRIPT));
 
         try {
-            engine.eval(in);
+            mEngine.eval(in);
         } catch (ScriptException e) {
-            logger.warning("could not evaluate '" + SCRIPT + "'");
+            LOGGER.warning("could not evaluate '" + SCRIPT + "'");
         }
     }
 
-    public boolean filter(Vulnerability v) {
+    @Override
+	public boolean filter(Vulnerability v) {
         try {
-            Invocable inv = (Invocable) engine;
+            Invocable inv = (Invocable) mEngine;
             Boolean result = (Boolean) inv.invokeFunction(FUNCTION, v);
             return result;
         } catch (NoSuchMethodException e) {
-            logger.warning("could not invoke '" + FUNCTION + "'");
+            LOGGER.warning("could not invoke '" + FUNCTION + "'");
             return DEFAULT_RESULT;
         } catch (ScriptException e) {
-            logger.warning(e.getMessage());
+            LOGGER.warning(e.getMessage());
             return DEFAULT_RESULT;
         } catch (ClassCastException e) {
-            logger.warning(e.getMessage());
+            LOGGER.warning(e.getMessage());
             return DEFAULT_RESULT;
         }
     }

@@ -21,7 +21,7 @@
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,97 +46,110 @@ package de.hshannover.f4.trust.ironvas;
  */
 public class Nvt {
 
-    private final String oid;
-    private final String name;
-    private final float cvss_base;
-    private final RiskfactorLevel risk_factor;
-    private final String cve;
-    private final String bid;
+    private final String mOid;
+    private final String mName;
+    private final float mCvssBase;
+    private final RiskfactorLevel mRiskFactor;
+    private final String mCve;
+    private final String mBid;
 
-    public Nvt(String oid, String name, float cvss_base,
-            RiskfactorLevel risk_factor, String cve, String bid) {
+    public Nvt(String oid, String name, float cvssBase,
+            RiskfactorLevel riskFactor, String cve, String bid) {
         super();
-        this.oid = oid;
-        this.name = name;
-        this.cvss_base = cvss_base;
-        this.risk_factor = risk_factor;
-        this.cve = cve;
-        this.bid = bid;
+        this.mOid = oid;
+        this.mName = name;
+        this.mCvssBase = cvssBase;
+        this.mRiskFactor = riskFactor;
+        this.mCve = cve;
+        this.mBid = bid;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((bid == null) ? 0 : bid.hashCode());
-        result = prime * result + ((cve == null) ? 0 : cve.hashCode());
-        result = prime * result + Float.floatToIntBits(cvss_base);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((oid == null) ? 0 : oid.hashCode());
+        result = prime * result + (mBid == null ? 0 : mBid.hashCode());
+        result = prime * result + (mCve == null ? 0 : mCve.hashCode());
+        result = prime * result + Float.floatToIntBits(mCvssBase);
+        result = prime * result + (mName == null ? 0 : mName.hashCode());
+        result = prime * result + (mOid == null ? 0 : mOid.hashCode());
         result = prime * result
-                + ((risk_factor == null) ? 0 : risk_factor.hashCode());
+                + (mRiskFactor == null ? 0 : mRiskFactor.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) {
+			return true;
+		}
+        if (obj == null) {
+			return false;
+		}
+        if (getClass() != obj.getClass()) {
+			return false;
+		}
         Nvt other = (Nvt) obj;
-        if (bid == null) {
-            if (other.bid != null)
-                return false;
-        } else if (!bid.equals(other.bid))
-            return false;
-        if (cve == null) {
-            if (other.cve != null)
-                return false;
-        } else if (!cve.equals(other.cve))
-            return false;
-        if (Float.floatToIntBits(cvss_base) != Float
-                .floatToIntBits(other.cvss_base))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (oid == null) {
-            if (other.oid != null)
-                return false;
-        } else if (!oid.equals(other.oid))
-            return false;
-        if (risk_factor != other.risk_factor)
-            return false;
+        if (mBid == null) {
+            if (other.mBid != null) {
+				return false;
+			}
+        } else if (!mBid.equals(other.mBid)) {
+			return false;
+		}
+        if (mCve == null) {
+            if (other.mCve != null) {
+				return false;
+			}
+        } else if (!mCve.equals(other.mCve)) {
+			return false;
+		}
+        if (Float.floatToIntBits(mCvssBase) != Float
+                .floatToIntBits(other.mCvssBase)) {
+			return false;
+		}
+        if (mName == null) {
+            if (other.mName != null) {
+				return false;
+			}
+        } else if (!mName.equals(other.mName)) {
+			return false;
+		}
+        if (mOid == null) {
+            if (other.mOid != null) {
+				return false;
+			}
+        } else if (!mOid.equals(other.mOid)) {
+			return false;
+		}
+        if (mRiskFactor != other.mRiskFactor) {
+			return false;
+		}
         return true;
     }
 
     public String getOid() {
-        return oid;
+        return mOid;
     }
 
     public String getName() {
-        return name;
+        return mName;
     }
 
-    public float getCvss_base() {
-        return cvss_base;
+    public float getCvssBase() {
+        return mCvssBase;
     }
 
-    public RiskfactorLevel getRisk_factor() {
-        return risk_factor;
+    public RiskfactorLevel getRiskFactor() {
+        return mRiskFactor;
     }
 
     public String getCve() {
-        return cve;
+        return mCve;
     }
 
     public String getBid() {
-        return bid;
+        return mBid;
     }
 
 }

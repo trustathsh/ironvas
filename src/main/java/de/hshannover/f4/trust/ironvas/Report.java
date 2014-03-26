@@ -21,7 +21,7 @@
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ import java.util.List;
  */
 public class Report {
 
-    public final String taskId;
-    public final List<Vulnerability> vulnerabilities;
+    public final String mTaskId;
+    public final List<Vulnerability> mVulnerabilities;
 
     public Report(String taskId, List<Vulnerability> vulnerabilities) {
         super();
-        this.taskId = taskId;
-        this.vulnerabilities = vulnerabilities;
+        this.mTaskId = taskId;
+        this.mVulnerabilities = vulnerabilities;
     }
 }

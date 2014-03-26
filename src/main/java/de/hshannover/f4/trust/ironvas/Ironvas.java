@@ -7,28 +7,28 @@
  *    | | | |  | |_| \__ \ |_| | (_| |  _  |\__ \|  _  |
  *    |_| |_|   \__,_|___/\__|\ \__,_|_| |_||___/|_| |_|
  *                             \____/
- *
+ * 
  * =====================================================
- *
+ * 
  * Hochschule Hannover
  * (University of Applied Sciences and Arts, Hannover)
  * Faculty IV, Dept. of Computer Science
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany
- *
+ * 
  * Email: trust@f4-i.fh-hannover.de
  * Website: http://trust.f4.hs-hannover.de
- *
+ * 
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,9 +56,6 @@ import de.hshannover.f4.trust.ifmapj.exception.InitializationException;
 import de.hshannover.f4.trust.ironvas.converter.Converter;
 import de.hshannover.f4.trust.ironvas.ifmap.Keepalive;
 import de.hshannover.f4.trust.ironvas.ifmap.ThreadSafeSsrc;
-import de.hshannover.f4.trust.ironvas.omp.OmpConnection;
-import de.hshannover.f4.trust.ironvas.omp.VulnerabilityFetcher;
-import de.hshannover.f4.trust.ironvas.subscriber.Subscriber;
 
 /**
  * Ironvas is an IF-MAP client which integrates OpenVAS into an IF-MAP
@@ -69,26 +66,26 @@ import de.hshannover.f4.trust.ironvas.subscriber.Subscriber;
  */
 public class Ironvas implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(Ironvas.class
+    private static final Logger LOGGER = Logger.getLogger(Ironvas.class
             .getName());
     private static final String LOGGING_CONFIG_FILE = "/logging.properties";
 
-    private SSRC ssrc;
-    private OmpConnection omp;
-    private Keepalive ssrcKeepalive;
+    private SSRC mSsrc;
+    private OmpConnection mOmp;
+    private Keepalive mSsrcKeepalive;
 
-    private Converter converter;
-    private VulnerabilityHandler handler;
-    private VulnerabilityFetcher fetcher;
+    private Converter mConverter;
+    private VulnerabilityHandler mHandler;
+    private VulnerabilityFetcher mFetcher;
 
-    private Subscriber subscriber;
+    private Subscriber mSubscriber;
 
-    private Thread handlerThread;
-    private Thread fetcherThread;
-    private Thread subscriberThread;
-    private Thread ssrcKeepaliveThread;
+    private Thread mHandlerThread;
+    private Thread mFetcherThread;
+    private Thread mSubscriberThread;
+    private Thread mSsrcKeepaliveThread;
 
-    private ShutdownHook shutdownHook;
+    private ShutdownHook mShutdownHook;
 
     /**
      * Initializes all ironvas components based on the parameter in
@@ -96,69 +93,68 @@ public class Ironvas implements Runnable {
      * before calling this constructor.
      */
     public Ironvas() {
-        ssrc = initIfmap();
-        omp = initOmp();
-        ssrcKeepalive = new Keepalive(ssrc, Configuration.ifmapKeepalive());
+        mSsrc = initIfmap();
+        mOmp = initOmp();
+        mSsrcKeepalive = new Keepalive(mSsrc, Configuration.ifmapKeepalive());
 
-        converter = createConverter(ssrc, omp);
-        handler = new VulnerabilityHandler(ssrc, converter);
+        mConverter = createConverter(mSsrc, mOmp);
+        mHandler = new VulnerabilityHandler(mSsrc, mConverter);
 
         VulnerabilityFilter vulnerabilityFilter = null;
         try {
             vulnerabilityFilter = new ScriptableFilter();
-            fetcher = new VulnerabilityFetcher(handler, omp,
+            mFetcher = new VulnerabilityFetcher(mHandler, mOmp,
                     Configuration.publishInterval(), vulnerabilityFilter);
         } catch (FilterInitializationException e) {
-            logger.warning("could not load filter.js, falling back to no " +
-                    "filtering");
-            fetcher = new VulnerabilityFetcher(handler, omp,
+            LOGGER.warning("could not load filter.js, falling back to no filtering");
+            mFetcher = new VulnerabilityFetcher(mHandler, mOmp,
                         Configuration.publishInterval());
         }
 
-        subscriber = new Subscriber(omp, ssrc, Configuration.subscriberPdp(),
+        mSubscriber = new Subscriber(mOmp, mSsrc, Configuration.subscriberPdp(),
                 Configuration.subscriberNamePrefix(),
                 Configuration.subscriberConfig());
 
         // TODO: introduce supervisor thread to control the different sub-threads (clean exit, error handling, ...)
-        handlerThread = new Thread(handler, "handler-thread");
-        fetcherThread = new Thread(fetcher, "fetcher-thread");
-        subscriberThread = new Thread(subscriber, "subscriber-thread");
-        ssrcKeepaliveThread = new Thread(ssrcKeepalive, "ssrc-keepalive-thread");
+        mHandlerThread = new Thread(mHandler, "handler-thread");
+        mFetcherThread = new Thread(mFetcher, "fetcher-thread");
+        mSubscriberThread = new Thread(mSubscriber, "subscriber-thread");
+        mSsrcKeepaliveThread = new Thread(mSsrcKeepalive, "ssrc-keepalive-thread");
 
-        shutdownHook = new ShutdownHook();
-        shutdownHook.add(handlerThread);
-        shutdownHook.add(fetcherThread);
-        shutdownHook.add(subscriberThread);
-        shutdownHook.add(ssrcKeepaliveThread);
-        Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+        mShutdownHook = new ShutdownHook();
+        mShutdownHook.add(mHandlerThread);
+        mShutdownHook.add(mFetcherThread);
+        mShutdownHook.add(mSubscriberThread);
+        mShutdownHook.add(mSsrcKeepaliveThread);
+        Runtime.getRuntime().addShutdownHook(new Thread(mShutdownHook));
     }
 
     @Override
     public void run() {
         if (!Configuration.publisherEnable()
                 && !Configuration.subscriberEnable()) {
-            logger.warning("nothing to do, shutting down ...");
+            LOGGER.warning("nothing to do, shutting down ...");
             System.exit(0);
         }
 
         try {
-            ssrc.newSession();
-            ssrc.purgePublisher();
+            mSsrc.newSession();
+            mSsrc.purgePublisher();
         } catch (Exception e) {
             System.err.println("could not connect to ifmap server: " + e);
             System.exit(1);
         }
 
-        ssrcKeepaliveThread.start();
+        mSsrcKeepaliveThread.start();
 
         if (Configuration.publisherEnable()) {
-            logger.info("activate publisher ...");
-            handlerThread.start();
-            fetcherThread.start();
+            LOGGER.info("activate publisher ...");
+            mHandlerThread.start();
+            mFetcherThread.start();
         }
         if (Configuration.subscriberEnable()) {
-            logger.info("activate subscriber ...");
-            subscriberThread.start();
+            LOGGER.info("activate subscriber ...");
+            mSubscriberThread.start();
         }
     }
 
@@ -190,7 +186,7 @@ public class Ironvas implements Runnable {
         Converter converter = null;
         String className = Configuration.getConverterName();
 
-        logger.info("try to load '" + className + "'");
+        LOGGER.info("try to load '" + className + "'");
         try {
             Class<?> clazz = Class.forName(className);
             Class<?>[] interfaces = clazz.getInterfaces();
@@ -304,7 +300,7 @@ public class Ironvas implements Runnable {
      * @return
      */
     public static OmpConnection initOmp() {
-        return initOmp(Configuration.openvasIP(), Configuration.openvasPort(),
+        return initOmp(Configuration.openvasIp(), Configuration.openvasPort(),
                 Configuration.openvasUser(), Configuration.openvasPassword(),
                 Configuration.keyStorePath(), Configuration.keyStorePassword());
     }

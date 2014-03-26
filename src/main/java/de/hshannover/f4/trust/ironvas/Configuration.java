@@ -21,7 +21,7 @@
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,9 @@ import java.util.logging.Logger;
  * @author Ralf Steuerwald
  *
  */
-public class Configuration {
+public final class Configuration {
 
-    private static final Logger logger = Logger.getLogger(Configuration.class
+    private static final Logger LOGGER = Logger.getLogger(Configuration.class
             .getName());
 
     /**
@@ -95,22 +95,24 @@ public class Configuration {
 
     // end configuration parameter ---------------------------------------------
 
+    private Configuration() { }
+
     /**
      * Loads the configuration file. Every time this method is called the file
      * is read again.
      */
     public static void init() {
-        logger.info("reading " + CONFIG_FILE + " ...");
+        LOGGER.info("reading " + CONFIG_FILE + " ...");
 
         properties = new Properties();
         InputStream in = Configuration.class.getResourceAsStream(CONFIG_FILE);
         try {
             properties.load(in);
         } catch (FileNotFoundException e) {
-            logger.severe("could not find " + CONFIG_FILE);
+            LOGGER.severe("could not find " + CONFIG_FILE);
             throw new RuntimeException(e.getMessage());
         } catch (IOException e) {
-            logger.severe("error while reading " + CONFIG_FILE);
+            LOGGER.severe("error while reading " + CONFIG_FILE);
             throw new RuntimeException(e.getMessage());
         } finally {
             try {
@@ -171,7 +173,7 @@ public class Configuration {
         return get(KEYSTORE_PASSWORD);
     }
 
-    public static String openvasIP() {
+    public static String openvasIp() {
         return get(OPENVAS_IP);
     }
 

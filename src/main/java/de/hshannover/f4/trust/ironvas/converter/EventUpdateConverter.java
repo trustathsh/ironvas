@@ -7,28 +7,28 @@
  *    | | | |  | |_| \__ \ |_| | (_| |  _  |\__ \|  _  |
  *    |_| |_|   \__,_|___/\__|\ \__,_|_| |_||___/|_| |_|
  *                             \____/
- *
+ * 
  * =====================================================
- *
+ * 
  * Hochschule Hannover
  * (University of Applied Sciences and Arts, Hannover)
  * Faculty IV, Dept. of Computer Science
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany
- *
+ * 
  * Email: trust@f4-i.fh-hannover.de
  * Website: http://trust.f4.hs-hannover.de
- *
+ * 
  * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
- * Copyright (C) 2011 - 2013 Trust@HsH
+ * Copyright (C) 2011 - 2014 Trust@HsH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -71,23 +71,23 @@ import de.hshannover.f4.trust.ironvas.Vulnerability;
  */
 public class EventUpdateConverter implements Converter {
 
-    private StandardIfmapMetadataFactory metadataFactory = IfmapJ
+    private StandardIfmapMetadataFactory mMetadataFactory = IfmapJ
             .createStandardMetadataFactory();
 
-    private Context context;
+    private Context mContext;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat(
+    private SimpleDateFormat mDateFormat = new SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ssZ");
 
     public PublishElement singleUpdate(Vulnerability v) {
         IpAddress ip = Identifiers.createIp4(v.getHost());
-        Document metadata = metadataFactory.createEvent(v.getNvt().getName(), // name
-                dateFormat.format(v.getTimestamp()), // discovered-time
-                context.getOpenVasServerId(), // discoverer-id
-                (int) ((v.getNvt().getCvss_base() * 10) + 0.5), // magnitude
+        Document metadata = mMetadataFactory.createEvent(v.getNvt().getName(), // name
+                mDateFormat.format(v.getTimestamp()), // discovered-time
+                mContext.getOpenVasServerId(), // discoverer-id
+                (int) (v.getNvt().getCvssBase() * 10 + 0.5), // magnitude
                                                                 // (0-100)
                 0, // confidence TODO define
-                mapSignificance(v.getNvt().getRisk_factor()), // significance
+                mapSignificance(v.getNvt().getRiskFactor()), // significance
                 EventType.cve, // type
                 v.getId(), // other-type-definition
                 v.getDescription(), // information
@@ -106,7 +106,7 @@ public class EventUpdateConverter implements Converter {
 
         String filter = String.format("meta:event[@ifmap-publisher-id='%s' "
                 + "and other-type-definition='%s']",
-                context.getIfmapPublisherId(), v.getId());
+                mContext.getIfmapPublisherId(), v.getId());
 
         IpAddress ip = Identifiers.createIp4(v.getHost());
         delete.addNamespaceDeclaration("meta", IfmapStrings.STD_METADATA_NS_URI);
@@ -173,7 +173,7 @@ public class EventUpdateConverter implements Converter {
         if (context == null) {
             throw new IllegalArgumentException("context cannot be null");
         }
-        this.context = context;
+        this.mContext = context;
         return this;
     }
 
