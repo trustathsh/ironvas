@@ -47,15 +47,13 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
-
-import de.hshannover.f4.trust.ifmapj.IfmapJHelper;
+import de.hshannover.f4.trust.ifmapj.IfmapJ;
 import de.hshannover.f4.trust.ifmapj.channel.SSRC;
+import de.hshannover.f4.trust.ifmapj.config.BasicAuthConfig;
+import de.hshannover.f4.trust.ifmapj.config.CertAuthConfig;
 import de.hshannover.f4.trust.ifmapj.exception.InitializationException;
 import de.hshannover.f4.trust.ironvas.converter.Converter;
 import de.hshannover.f4.trust.ironvas.ifmap.Keepalive;
-import de.hshannover.f4.trust.ironvas.ifmap.ThreadSafeSsrc;
 import de.hshannover.f4.trust.ironvas.omp.OmpConnection;
 import de.hshannover.f4.trust.ironvas.omp.VulnerabilityFetcher;
 import de.hshannover.f4.trust.ironvas.subscriber.Subscriber;
@@ -233,34 +231,24 @@ public class Ironvas implements Runnable {
     public static SSRC initIfmap(String authMethod, String basicUrl,
             String certUrl, String user, String pass, String keypath,
             String keypass) {
-        SSRC ifmap = null;
-        TrustManager[] tm = null;
-        KeyManager[] km = null;
-
-        try {
-            tm = IfmapJHelper.getTrustManagers(
-                    Ironvas.class.getResourceAsStream(keypath), keypass);
-            km = IfmapJHelper.getKeyManagers(
-                    Ironvas.class.getResourceAsStream(keypath), keypass);
-        } catch (InitializationException e1) {
-            e1.printStackTrace();
-            System.exit(1);
-        }
-
+        int initialConnectionTimeout = 120 * 1000;
         try {
             if (authMethod.equals("basic")) {
-                ifmap = new ThreadSafeSsrc(basicUrl, user, pass, tm);
+                BasicAuthConfig config = new BasicAuthConfig(basicUrl, user,
+                        pass, keypath, keypass, true, initialConnectionTimeout);
+                return IfmapJ.createSsrc(config);
             } else if (authMethod.equals("cert")) {
-                ifmap = new ThreadSafeSsrc(certUrl, km, tm);
+                CertAuthConfig config = new CertAuthConfig(certUrl, keypath,
+                        keypass, keypath, keypass, true,
+                        initialConnectionTimeout);
+                return IfmapJ.createSsrc(config);
             } else {
                 throw new IllegalArgumentException(
                         "unknown authentication method '" + authMethod + "'");
             }
         } catch (InitializationException e) {
-            e.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(e);
         }
-        return ifmap;
     }
 
     /**
