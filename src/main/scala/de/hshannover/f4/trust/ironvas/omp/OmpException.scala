@@ -18,7 +18,7 @@
  * Email: trust@f4-i.fh-hannover.de
  * Website: http://trust.f4.hs-hannover.de
  * 
- * This file is part of ironvas, version 0.1.2, implemented by the Trust@HsH
+ * This file is part of ironvas, version 0.1.3, implemented by the Trust@HsH
  * research group at the Hochschule Hannover.
  * %%
  * Copyright (C) 2011 - 2014 Trust@HsH
