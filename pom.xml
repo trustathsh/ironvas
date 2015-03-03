@@ -146,7 +146,7 @@
 				<version>2.10</version>
 				<configuration>
 					<propertyExpansion>headerfile=${project.basedir}/src/license/dummy/Dummy.java</propertyExpansion>
-					<configLocation>http://trust.f4.hs-hannover.de/download/dev_docs/code_conventions/trustHsHCodeconventions.xml</configLocation>
+					<configLocation>https://raw.githubusercontent.com/trustathsh/ironcommon/master/src/main/documents/trustAtHsHCheckstylePolicy.xml</configLocation>
 				</configuration>
 			</plugin>
 		</plugins>
