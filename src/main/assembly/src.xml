@@ -13,9 +13,10 @@
 				<include>src/main/java/</include>
 				<include>src/main/scala/</include>
 
-				<include>LICENSE</include>
-				<include>NOTICE</include>
-				<include>README</include>
+				<include>README.md</include>
+				<include>LICENSE.txt</include>
+				<include>NOTICE.txt</include>
+				<include>CHANGELOG.txt</include>
 				<include>pom.xml</include>
 			</includes>
 			<outputDirectory></outputDirectory>
