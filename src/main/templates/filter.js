@@ -32,6 +32,8 @@ function filterByName(vulnerability) {
 
 	if (vulnerability.getNvt().getName().match(re)) {
 		return true;
-	else
+        }
+        else {
 		return false;
+        }
 }
