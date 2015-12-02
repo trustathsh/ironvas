@@ -9,7 +9,7 @@
 	<!-- general project information -->
 	<groupId>de.hshannover.f4.trust</groupId>
 	<artifactId>ironvas</artifactId>
-	<version>0.1.5</version>
+	<version>0.1.6</version>
 	<packaging>jar</packaging>
 	<inceptionYear>2011</inceptionYear>
 	<name>ironvas</name>
