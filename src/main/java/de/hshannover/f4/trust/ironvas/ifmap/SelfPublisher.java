@@ -84,7 +84,7 @@ public class SelfPublisher {
 		try {
 			Identifier service = createService(serviceName, serviceType, servicePort, administrativeDomain);
 			Identifier implementation = createImplementation(implementationName, implementationVersion,
-					implementationPlatform, implementationPatch, administrativeDomain);
+					implementationPlatform, implementationPatch);
 
 			publishElements.add(createServiceIpPubElement(service, ip));
 			publishElements.add(createServiceImplementationPubElement(service, implementation));
@@ -96,15 +96,11 @@ public class SelfPublisher {
 	}
 
 	private static Identifier createImplementation(String implementationName, String implementationVersion,
-			String implementationPatch, String implementationPlatform, String administrativeDomain)
+			String implementationPatch, String implementationPlatform)
 					throws MarshalException {
 		StringBuilder implementationDocument = new StringBuilder();
 		implementationDocument.append("<"
 				+ SIMU_IDENTIFIER_PREFIX + ":implementation ");
-		if (administrativeDomain != null) {
-			implementationDocument.append("administrative-domain=\""
-					+ administrativeDomain + "\" ");
-		}
 		implementationDocument.append("xmlns:"
 				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI + "\" ");
 		implementationDocument.append("name=\""
@@ -127,10 +123,8 @@ public class SelfPublisher {
 		StringBuilder serviceDocument = new StringBuilder();
 		serviceDocument.append("<"
 				+ SIMU_IDENTIFIER_PREFIX + ":service ");
-		if (administrativeDomain != null) {
-			serviceDocument.append("administrative-domain=\""
-					+ administrativeDomain + "\" ");
-		}
+		serviceDocument.append("administrative-domain=\""
+				+ administrativeDomain + "\" ");
 		serviceDocument.append("xmlns:"
 				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI + "\" ");
 		serviceDocument.append("type=\""

@@ -172,7 +172,7 @@ public class Ironvas implements Runnable {
 				String implementationVersion = Configuration.openvasVersion();
 				String implementationPlatform = null;
 				String implementationPatch = null;
-				String administrativeDomain = null;
+				String administrativeDomain = "";
 				PublishRequest selfPublishRequest = SelfPublisher.createSelfPublishRequest(ipValue, macValue,
 						deviceName, serviceName, serviceType, servicePort,
 						implementationName, implementationVersion, implementationPlatform, implementationPatch,
