@@ -199,14 +199,25 @@ public class Ironvas implements Runnable {
 	private String getLocalMACAddress(String ipValue) {
 		try {
 			InetAddress ip = InetAddress.getByName(ipValue);
-			NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-			byte[] macAddress = network.getHardwareAddress();
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < macAddress.length; i++) {
-				sb.append(String.format("%02X%s", macAddress[i], (i < macAddress.length
-						- 1) ? "-" : ""));
+			if (ip.isLoopbackAddress()) {
+				ip = InetAddress.getLocalHost();
 			}
-			return sb.toString();
+			if (ip.isSiteLocalAddress()) {
+				NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+				if (network != null) {
+					byte[] macAddress = network.getHardwareAddress();
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < macAddress.length; i++) {
+						sb.append(String.format("%02X%s", macAddress[i], (i < macAddress.length
+								- 1) ? "-" : ""));
+					}
+					return sb.toString();
+				} else {
+					return null;
+				}
+			} else {
+				return null;
+			}
 		} catch (SocketException e) {
 			return null;
 		} catch (UnknownHostException e) {
