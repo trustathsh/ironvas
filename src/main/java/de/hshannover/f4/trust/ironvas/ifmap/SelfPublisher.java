@@ -105,6 +105,8 @@ public class SelfPublisher {
 			implementationDocument.append("administrative-domain=\""
 					+ administrativeDomain + "\" ");
 		}
+		implementationDocument.append("xmlns:"
+				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI + "\" ");
 		implementationDocument.append("name=\""
 				+ implementationName + "\" ");
 		implementationDocument.append("version=\""
@@ -113,7 +115,7 @@ public class SelfPublisher {
 				+ implementationPatch + "\" ");
 		implementationDocument.append("platform=\""
 				+ implementationPlatform + "\" ");
-		implementationDocument.append("\" >");
+		implementationDocument.append(">");
 		implementationDocument.append("</"
 				+ SIMU_IDENTIFIER_PREFIX + ":implementation>");
 
@@ -130,14 +132,14 @@ public class SelfPublisher {
 					+ administrativeDomain + "\" ");
 		}
 		serviceDocument.append("xmlns:"
-				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI);
+				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI + "\" ");
 		serviceDocument.append("type=\""
 				+ serviceType + "\" ");
 		serviceDocument.append("name=\""
 				+ serviceName + "\" ");
 		serviceDocument.append("port=\""
 				+ servicePort + "\" ");
-		serviceDocument.append("\" >");
+		serviceDocument.append(">");
 		serviceDocument.append("</"
 				+ SIMU_IDENTIFIER_PREFIX + ":service>");
 
@@ -147,10 +149,10 @@ public class SelfPublisher {
 	private static PublishElement createServiceImplementationPubElement(Identifier service, Identifier implementation) {
 		PublishUpdate result = Requests.createPublishUpdate();
 		String xmlString = "<"
-				+ SIMU_METADATA_PREFIX + ":service-ip "
+				+ SIMU_METADATA_PREFIX + ":service-implementation "
 				+ "ifmap-cardinality=\"singleValue\" "
 				+ "xmlns:" + SIMU_METADATA_PREFIX + "=\"" + SIMU_METADATA_URI + "\">"
-				+ "</" + SIMU_METADATA_PREFIX + ":service-ip>";
+				+ "</" + SIMU_METADATA_PREFIX + ":service-implementation>";
 		Document link = VENDOR_FACTORY.createMetadata(xmlString);
 
 		result.setIdentifier1(service);
