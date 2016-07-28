@@ -67,24 +67,20 @@ public class SelfPublisher {
 	private static final StandardIfmapMetadataFactory FACTORY = new StandardIfmapMetadataFactoryImpl();
 	private static final VendorSpecificMetadataFactory VENDOR_FACTORY = new VendorSpecificMetadataFactoryImpl();
 
-	public static PublishRequest createSelfPublishRequest(String ipValue, String macValue, String deviceName,
+	public static PublishRequest createSelfPublishRequest(String ipValue, String deviceName,
 			String serviceName, String serviceType, String servicePort, String implementationName,
 			String implementationVersion, String implementationPlatform, String implementationPatch,
 			String administrativeDomain) {
 		List<PublishElement> publishElements = new ArrayList<PublishElement>();
 
 		Identifier ip = Identifiers.createIp4(ipValue);
-		if (macValue != null) {
-			Identifier mac = Identifiers.createMac(macValue);
-			publishElements.add(createIpMacPubElement(ip, mac));
-		}
 		Identifier device = Identifiers.createDev(deviceName);
 		publishElements.add(createDeviceIpPubElement(device, ip));
 
 		try {
 			Identifier service = createService(serviceName, serviceType, servicePort, administrativeDomain);
 			Identifier implementation = createImplementation(implementationName, implementationVersion,
-					implementationPlatform, implementationPatch);
+					implementationPlatform, implementationPatch, administrativeDomain);
 
 			publishElements.add(createServiceIpPubElement(service, ip));
 			publishElements.add(createServiceImplementationPubElement(service, implementation));
@@ -96,11 +92,13 @@ public class SelfPublisher {
 	}
 
 	private static Identifier createImplementation(String implementationName, String implementationVersion,
-			String implementationPatch, String implementationPlatform)
+			String implementationPatch, String implementationPlatform, String administrativeDomain)
 					throws MarshalException {
 		StringBuilder implementationDocument = new StringBuilder();
 		implementationDocument.append("<"
 				+ SIMU_IDENTIFIER_PREFIX + ":implementation ");
+		implementationDocument.append("administrative-domain=\""
+				+ administrativeDomain + "\" ");
 		implementationDocument.append("xmlns:"
 				+ SIMU_IDENTIFIER_PREFIX + "=\"" + SIMU_IDENTIFIER_URI + "\" ");
 		implementationDocument.append("name=\""
@@ -180,18 +178,6 @@ public class SelfPublisher {
 
 		result.setIdentifier1(device);
 		result.setIdentifier2(ip);
-		result.addMetadata(link);
-		result.setLifeTime(MetadataLifetime.session);
-
-		return result;
-	}
-
-	private static PublishElement createIpMacPubElement(Identifier ip, Identifier mac) {
-		PublishUpdate result = Requests.createPublishUpdate();
-		Document link = FACTORY.createIpMac();
-
-		result.setIdentifier1(ip);
-		result.setIdentifier2(mac);
 		result.addMetadata(link);
 		result.setLifeTime(MetadataLifetime.session);
 

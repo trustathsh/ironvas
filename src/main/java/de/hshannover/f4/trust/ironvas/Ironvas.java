@@ -162,7 +162,6 @@ public class Ironvas implements Runnable {
 			if (Configuration.selfPublishEnable()) {
 				LOGGER.info("active self-publisher ...");
 				String ipValue = Configuration.openvasIp();
-				String macValue = getLocalMACAddress(ipValue);
 				String deviceName = Configuration.selfPublishDevice();
 
 				String serviceName = "openvas";
@@ -173,8 +172,8 @@ public class Ironvas implements Runnable {
 				String implementationPlatform = null;
 				String implementationPatch = null;
 				String administrativeDomain = "";
-				PublishRequest selfPublishRequest = SelfPublisher.createSelfPublishRequest(ipValue, macValue,
-						deviceName, serviceName, serviceType, servicePort,
+				PublishRequest selfPublishRequest = SelfPublisher.createSelfPublishRequest(ipValue, deviceName, 
+						serviceName, serviceType, servicePort,
 						implementationName, implementationVersion, implementationPlatform, implementationPatch,
 						administrativeDomain);
 				try {
@@ -193,35 +192,6 @@ public class Ironvas implements Runnable {
 		if (Configuration.subscriberEnable()) {
 			LOGGER.info("activate subscriber ...");
 			mSubscriberThread.start();
-		}
-	}
-
-	private String getLocalMACAddress(String ipValue) {
-		try {
-			InetAddress ip = InetAddress.getByName(ipValue);
-			if (ip.isLoopbackAddress()) {
-				ip = InetAddress.getLocalHost();
-			}
-			if (ip.isSiteLocalAddress()) {
-				NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-				if (network != null) {
-					byte[] macAddress = network.getHardwareAddress();
-					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < macAddress.length; i++) {
-						sb.append(String.format("%02X%s", macAddress[i], (i < macAddress.length
-								- 1) ? "-" : ""));
-					}
-					return sb.toString();
-				} else {
-					return null;
-				}
-			} else {
-				return null;
-			}
-		} catch (SocketException e) {
-			return null;
-		} catch (UnknownHostException e) {
-			return null;
 		}
 	}
 
