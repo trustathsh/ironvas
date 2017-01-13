@@ -45,8 +45,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * This class loads the configuration file from the file system and provides a
- * set of constants and a getter method to access these values.
+ * This class loads the configuration file from the file system and provides a set of constants and a getter method to
+ * access these values.
  *
  * @author Ralf Steuerwald
  *
@@ -100,14 +100,22 @@ public final class Configuration {
 	private static final String SUBSCRIBER_NAME_PREFIX = "ironvas.subscriber.namePrefix";
 	private static final String SUBSCRIBER_CONFIG = "ironvas.subscriber.config";
 
+	// amqp eventstream
+	private static final String EVENTSTREAM_ENABLE = "ironvas.eventstream.enable";
+	private static final String AMQP_IP = "amqp.server.ip";
+	private static final String AMQP_PORT = "amqp.server.port";
+	private static final String AMQP_SERVER_VIRTUALHOST = "amqp.server.virtualhost";
+	private static final String AMQP_EXCHANGE_NAME = "amqp.exchange.name";
+	private static final String AMQP_USER_NAME = "amqp.user.name";
+	private static final String AMQP_USER_PASSWORD = "amqp.user.password";
+
 	// end configuration parameter ---------------------------------------------
 
 	private Configuration() {
 	}
 
 	/**
-	 * Loads the configuration file. Every time this method is called the file
-	 * is read again.
+	 * Loads the configuration file. Every time this method is called the file is read again.
 	 */
 	public static void init() {
 		LOGGER.info("reading "
@@ -135,8 +143,7 @@ public final class Configuration {
 	}
 
 	/**
-	 * Returns the value assigned to the given key. If the configuration has not
-	 * been loaded jet this method loads it.
+	 * Returns the value assigned to the given key. If the configuration has not been loaded jet this method loads it.
 	 *
 	 * @param key
 	 * @return the value assigned to key or null if the is none
@@ -239,5 +246,34 @@ public final class Configuration {
 	public static String openvasVersion() {
 		return get(OPENVAS_VERSION);
 	}
+
+	public static String eventstreamEnable() {
+		return get(EVENTSTREAM_ENABLE);
+	}
+
+	public static String amqpIp() {
+		return get(AMQP_IP);
+	}
+
+	public static String amqpPort() {
+		return get(AMQP_PORT);
+	}
+
+	public static String amqpExchangeName() {
+		return get(AMQP_EXCHANGE_NAME);
+	}
+
+	public static String amqpUserName() {
+		return get(AMQP_USER_NAME);
+	}
+
+	public static String amqpPassword() {
+		return get(AMQP_USER_PASSWORD);
+	}
+	
+	public static String amqpVirtualHost() {
+		return get(AMQP_SERVER_VIRTUALHOST);
+	}
+	
 
 }

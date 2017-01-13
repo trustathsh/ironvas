@@ -1,55 +1,39 @@
 /*
- * #%L
- * =====================================================
- *   _____                _     ____  _   _       _   _
- *  |_   _|_ __ _   _ ___| |_  / __ \| | | | ___ | | | |
- *    | | | '__| | | / __| __|/ / _` | |_| |/ __|| |_| |
- *    | | | |  | |_| \__ \ |_| | (_| |  _  |\__ \|  _  |
- *    |_| |_|   \__,_|___/\__|\ \__,_|_| |_||___/|_| |_|
- *                             \____/
+ * #%L ===================================================== _____ _ ____ _ _ _ _ |_ _|_ __ _ _ ___| |_ / __ \| | | |
+ * ___ | | | | | | | '__| | | / __| __|/ / _` | |_| |/ __|| |_| | | | | | | |_| \__ \ |_| | (_| | _ |\__ \| _ | |_| |_|
+ * \__,_|___/\__|\ \__,_|_| |_||___/|_| |_| \____/
  * 
  * =====================================================
  * 
- * Hochschule Hannover
- * (University of Applied Sciences and Arts, Hannover)
- * Faculty IV, Dept. of Computer Science
+ * Hochschule Hannover (University of Applied Sciences and Arts, Hannover) Faculty IV, Dept. of Computer Science
  * Ricklinger Stadtweg 118, 30459 Hannover, Germany
  * 
- * Email: trust@f4-i.fh-hannover.de
- * Website: http://trust.f4.hs-hannover.de
+ * Email: trust@f4-i.fh-hannover.de Website: http://trust.f4.hs-hannover.de
  * 
- * This file is part of ironvas, version 0.1.7, implemented by the Trust@HsH
- * research group at the Hochschule Hannover.
- * %%
- * Copyright (C) 2011 - 2016 Trust@HsH
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of ironvas, version 0.1.7, implemented by the Trust@HsH research group at the Hochschule Hannover.
+ * %% Copyright (C) 2011 - 2016 Trust@HsH %% Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License. #L%
  */
 package de.hshannover.f4.trust.ironvas;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
 
 import de.hshannover.f4.trust.ifmapj.IfmapJ;
 import de.hshannover.f4.trust.ifmapj.channel.SSRC;
@@ -67,8 +51,7 @@ import de.hshannover.f4.trust.ironvas.omp.VulnerabilityFetcher;
 import de.hshannover.f4.trust.ironvas.subscriber.Subscriber;
 
 /**
- * Ironvas is an IF-MAP client which integrates OpenVAS into an IF-MAP
- * environment.
+ * Ironvas is an IF-MAP client which integrates OpenVAS into an IF-MAP environment.
  *
  * @author Ralf Steuerwald
  *
@@ -82,10 +65,12 @@ public class Ironvas implements Runnable {
 	private SSRC mSsrc;
 	private OmpConnection mOmp;
 	private Keepalive mSsrcKeepalive;
+	private Connection mAmqpConnection;
 
 	private Converter mConverter;
 	private VulnerabilityHandler mHandler;
 	private VulnerabilityFetcher mFetcher;
+	private AmqpPublisher mAmqpPublisher;
 
 	private Subscriber mSubscriber;
 
@@ -93,31 +78,42 @@ public class Ironvas implements Runnable {
 	private Thread mFetcherThread;
 	private Thread mSubscriberThread;
 	private Thread mSsrcKeepaliveThread;
+	private Thread mAmqpPublisherThread;
 
 	private ShutdownHook mShutdownHook;
 
 	/**
-	 * Initializes all ironvas components based on the parameter in
-	 * {@link Configuration}, therefore the {@link Configuration} must be loaded
-	 * before calling this constructor.
+	 * Initializes all ironvas components based on the parameter in {@link Configuration}, therefore the
+	 * {@link Configuration} must be loaded before calling this constructor.
 	 */
 	public Ironvas() {
 		mSsrc = initIfmap();
 		mOmp = initOmp();
+		mShutdownHook = new ShutdownHook();
+		mAmqpPublisher = null;
+		
+		if(Configuration.eventstreamEnable().equals("true")){  // String if it later gets a both feature
+			mAmqpConnection = initAMQP();
+			mAmqpPublisher = new AmqpPublisher(mAmqpConnection, Configuration.amqpExchangeName());
+			mAmqpPublisherThread = new Thread(mAmqpPublisher, "amqp-publischer-thread");
+			mShutdownHook.add(mAmqpPublisherThread);
+		}		
+		
 		mSsrcKeepalive = new Keepalive(mSsrc, Configuration.ifmapKeepalive());
 
 		mConverter = createConverter(mSsrc, mOmp);
-		mHandler = new VulnerabilityHandler(mSsrc, mConverter);
-
+		mHandler = new VulnerabilityHandler(mSsrc, mConverter, Configuration.selfPublishDevice(),
+				Configuration.eventstreamEnable());
+		
 		VulnerabilityFilter vulnerabilityFilter = null;
 		try {
 			vulnerabilityFilter = new ScriptableFilter();
 			mFetcher = new VulnerabilityFetcher(mHandler, mOmp,
-					Configuration.publishInterval(), vulnerabilityFilter);
+					Configuration.publishInterval(), mAmqpPublisher, vulnerabilityFilter);
 		} catch (FilterInitializationException e) {
 			LOGGER.warning("could not load filter.js, falling back to no filtering");
 			mFetcher = new VulnerabilityFetcher(mHandler, mOmp,
-					Configuration.publishInterval());
+					Configuration.publishInterval(),mAmqpPublisher);
 		}
 
 		mSubscriber = new Subscriber(mOmp, mSsrc, Configuration.subscriberPdp(),
@@ -129,12 +125,12 @@ public class Ironvas implements Runnable {
 		mFetcherThread = new Thread(mFetcher, "fetcher-thread");
 		mSubscriberThread = new Thread(mSubscriber, "subscriber-thread");
 		mSsrcKeepaliveThread = new Thread(mSsrcKeepalive, "ssrc-keepalive-thread");
-
-		mShutdownHook = new ShutdownHook();
+		
 		mShutdownHook.add(mHandlerThread);
 		mShutdownHook.add(mFetcherThread);
-		mShutdownHook.add(mSubscriberThread);
+		mShutdownHook.add(mSubscriberThread);		
 		mShutdownHook.add(mSsrcKeepaliveThread);
+		
 		Runtime.getRuntime().addShutdownHook(new Thread(mShutdownHook));
 	}
 
@@ -172,22 +168,29 @@ public class Ironvas implements Runnable {
 				String implementationPlatform = null;
 				String implementationPatch = null;
 				String administrativeDomain = "";
-				PublishRequest selfPublishRequest = SelfPublisher.createSelfPublishRequest(ipValue, deviceName, 
+				PublishRequest selfPublishRequest = SelfPublisher.createSelfPublishRequest(ipValue, deviceName,
 						serviceName, serviceType, servicePort,
 						implementationName, implementationVersion, implementationPlatform, implementationPatch,
 						administrativeDomain);
 				try {
 					mSsrc.publish(selfPublishRequest);
 				} catch (IfmapErrorResult e) {
-					System.err.println("could not publish self-information: " + e);
+					System.err.println("could not publish self-information: "
+							+ e);
 				} catch (IfmapException e) {
-					System.err.println("could not publish self-information: " + e);
+					System.err.println("could not publish self-information: "
+							+ e);
 				}
 			}
 
 			LOGGER.info("activate publisher ...");
 			mHandlerThread.start();
 			mFetcherThread.start();
+			
+			if(Configuration.eventstreamEnable().equals("true")){
+				LOGGER.info("activate AMQP publisher ...");
+				mAmqpPublisherThread.start();
+			}
 		}
 		if (Configuration.subscriberEnable()) {
 			LOGGER.info("activate subscriber ...");
@@ -208,8 +211,7 @@ public class Ironvas implements Runnable {
 	}
 
 	/**
-	 * Creates a {@link Converter} instance with the given configuration
-	 * parameters.
+	 * Creates a {@link Converter} instance with the given configuration parameters.
 	 *
 	 * @param publisherId
 	 * @param openvasId
@@ -293,8 +295,7 @@ public class Ironvas implements Runnable {
 	}
 
 	/**
-	 * Creates a {@link SSRC} instance based on the values in
-	 * {@link Configuration}.
+	 * Creates a {@link SSRC} instance based on the values in {@link Configuration}.
 	 *
 	 * @return
 	 */
@@ -307,8 +308,7 @@ public class Ironvas implements Runnable {
 	}
 
 	/**
-	 * Creates an {@link omp.OmpConnection} instance with the given
-	 * configuration parameters.
+	 * Creates an {@link omp.OmpConnection} instance with the given configuration parameters.
 	 *
 	 * @param ip
 	 * @param port
@@ -326,8 +326,7 @@ public class Ironvas implements Runnable {
 	}
 
 	/**
-	 * Creates an {@link omp.OmpConnection} instane based on the values in
-	 * {@link Configuration}.
+	 * Creates an {@link omp.OmpConnection} instane based on the values in {@link Configuration}.
 	 *
 	 * @return
 	 */
@@ -335,6 +334,50 @@ public class Ironvas implements Runnable {
 		return initOmp(Configuration.openvasIp(), Configuration.openvasPort(),
 				Configuration.openvasUser(), Configuration.openvasPassword(),
 				Configuration.keyStorePath(), Configuration.keyStorePassword());
+	}
+
+	/**
+	 * Creates a {@link AMQP} instance with the given configuration parameters.
+	 *
+	 * @param userName
+	 * @param password
+	 * @param virtualHost
+	 * @param hostName
+	 * @param portNumber
+	 * @return
+	 */
+	public static Connection initAMQP(String userName, String password,
+			String virtualHost, String hostName, Integer portNumber) {
+
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setUsername(userName);
+		factory.setPassword(password);
+		factory.setVirtualHost(virtualHost);
+		factory.setHost(hostName);
+		factory.setPort(portNumber);
+		Connection connection = null;
+		try {
+			connection = factory.newConnection();
+		} catch (IOException e) {
+			LOGGER.severe("Cannot establish connection to AMQP, shutting down ...");
+			System.exit(1);
+		} catch (TimeoutException e) {
+			LOGGER.severe("Cannot establish connection to AMQP, shutting down ...");
+			System.exit(1);
+		}
+		return connection;
+
+	}
+
+	/**
+	 * Creates an {@link AMQP.Connection} instance based on the values in {@link Configuration}.
+	 *
+	 * @return
+	 */
+	public static Connection initAMQP() {
+		return initAMQP(Configuration.amqpUserName(), Configuration.amqpPassword(),
+				Configuration.amqpVirtualHost(), Configuration.amqpIp(),
+				Integer.parseInt(Configuration.amqpPort()));
 	}
 
 	public static void setupLogging() {
