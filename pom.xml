@@ -40,13 +40,16 @@
 	<developers>
 		<developer>
 			<name>Trust@HsH</name>
-			<email>trust@f4-i.fh-hannover.de</email>
+			<email>f4-i-trust@lists.hs-hannover.de</email>
 		</developer>
 	</developers>
 
 	<contributors>
 		<contributor>
 			<name>Ralf Steuerwald</name>
+		</contributor>
+				<contributor>
+			<name>Marius Rohde</name>
 		</contributor>
 	</contributors>
 
@@ -198,6 +201,11 @@
     		<groupId>com.rabbitmq</groupId>
     		<artifactId>amqp-client</artifactId>
     		<version>4.0.1</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.slf4j</groupId>
+    		<artifactId>slf4j-simple</artifactId>
+    		<version>1.6.1</version>
 		</dependency>
 		<dependency>
     		<groupId>org.apache.commons</groupId>

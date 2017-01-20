@@ -11,13 +11,13 @@ via IF-MAP.
 ironvas consists of two elements:
 
 * One part - the "publisher" - simply fetches the latest scan reports stored in
-  an OpenVAS server, converts them into IF-MAP metadata
-  (currently "event"-metadata) and finally publishes them into a MAP server.
+  an OpenVAS server, converts them into IF-MAP metadata and/or AMQP
+  (currently "event"-metadata) and finally publishes them into a MAP server and/or RabbitMQ.
   ironvas takes care to not flood the MAPS with
   redundant information, furthermore you can specify a filter (in `filter.js`)
   for the vulnerabilities to publish.
   If a scan report is deleted from the OpenVAS server, ironvas will purge all
-  published metadata, associated with the deleted report, from the MAPS.
+  published metadata, associated with the deleted report, from the MAPS and sends a deleted event to the AMQP Queue.
   In other words this means that ironvas always tries to reflect the current/latest
   knowledge of an OpenVAS server in a MAP server.
   The event-metadata that ironvas published is filled with the following
@@ -62,8 +62,8 @@ yourself Maven 3 is also needed.
 
 Configuration
 =============
-To setup the binary package you need to import the OpenVAS and MAP server
-certificates into `ironvas.jks`.
+To setup the binary package you need to import the OpenVAS, AMQP-Server(optional)
+and MAP server certificates into `ironvas.jks`.
 On a Ubuntu installation of OpenVAS you can find the OpenVAS certificate in
 `/var/lib/openvas/CA/servercert.pem`. If you want to use ironvas with irond
 the keystores of both are configured with ready-to-use testing certificates.
@@ -76,6 +76,9 @@ In general you have to specify:
 * the OpenVAS OMP port,
 * the OpenVAS OMP credentials,
 * the MAPS URL and credentials.
+
+Optional the AMQP connection information
+and credentials
 
 Have a look at the comments in `configuration.properties` for more details.
 

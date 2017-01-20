@@ -22,8 +22,14 @@
  */
 package de.hshannover.f4.trust.ironvas;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.ConsoleHandler;
@@ -31,6 +37,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
@@ -94,7 +103,7 @@ public class Ironvas implements Runnable {
 		
 		if(Configuration.eventstreamEnable().equals("true")){  // String if it later gets a both feature
 			mAmqpConnection = initAMQP();
-			mAmqpPublisher = new AmqpPublisher(mAmqpConnection, Configuration.amqpExchangeName());
+			mAmqpPublisher = new AmqpPublisher(mAmqpConnection, Configuration.amqpExchangeName(), mSsrc.getPublisherId());
 			mAmqpPublisherThread = new Thread(mAmqpPublisher, "amqp-publischer-thread");
 			mShutdownHook.add(mAmqpPublisherThread);
 		}		
@@ -339,32 +348,68 @@ public class Ironvas implements Runnable {
 	/**
 	 * Creates a {@link AMQP} instance with the given configuration parameters.
 	 *
+	 * @param eventStreamEnabled
+	 * @param tlsEnable
 	 * @param userName
 	 * @param password
 	 * @param virtualHost
 	 * @param hostName
 	 * @param portNumber
-	 * @return
+	 * @param keyStorePath
+	 * @param keyStorePassword
+	 * @return 
 	 */
-	public static Connection initAMQP(String userName, String password,
-			String virtualHost, String hostName, Integer portNumber) {
-
+	public static Connection initAMQP(String eventStreamEnabled, boolean tlsEnable, String userName, String password,
+			String virtualHost, String hostName, Integer portNumber, String keyStorePath, String keyStorePassword) {
+		
+		Connection connection = null;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setUsername(userName);
 		factory.setPassword(password);
 		factory.setVirtualHost(virtualHost);
 		factory.setHost(hostName);
 		factory.setPort(portNumber);
-		Connection connection = null;
-		try {
-			connection = factory.newConnection();
-		} catch (IOException e) {
-			LOGGER.severe("Cannot establish connection to AMQP, shutting down ...");
-			System.exit(1);
-		} catch (TimeoutException e) {
-			LOGGER.severe("Cannot establish connection to AMQP, shutting down ...");
-			System.exit(1);
-		}
+		if(eventStreamEnabled.equals("true")){
+			if(tlsEnable){
+				try {
+				
+			        KeyStore tks = KeyStore.getInstance("JKS");
+			        tks.load(Ironvas.class.getResourceAsStream(keyStorePath), keyStorePassword.toCharArray());
+			
+			        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+			        tmf.init(tks);
+			
+			        SSLContext c = SSLContext.getInstance("TLSv1.2");
+			        c.init(null, tmf.getTrustManagers(), null);
+			        factory.useSslProtocol(c);
+			        
+				} catch (KeyStoreException e1) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e1);
+				} catch (NoSuchAlgorithmException e) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				} catch (CertificateException e) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				} catch (FileNotFoundException e) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				} catch (IOException e) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				} catch (KeyManagementException e) {
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				}
+				
+			}
+			try {
+				connection = factory.newConnection();
+			} catch (IOException e) {
+				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				System.exit(1);
+			} catch (TimeoutException e) {
+				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				System.exit(1);
+			}			
+			
+		}		
+
 		return connection;
 
 	}
@@ -375,9 +420,9 @@ public class Ironvas implements Runnable {
 	 * @return
 	 */
 	public static Connection initAMQP() {
-		return initAMQP(Configuration.amqpUserName(), Configuration.amqpPassword(),
+		return initAMQP(Configuration.eventstreamEnable(), Configuration.amqpTlsEnable(), Configuration.amqpUserName(), Configuration.amqpPassword(),
 				Configuration.amqpVirtualHost(), Configuration.amqpIp(),
-				Integer.parseInt(Configuration.amqpPort()));
+				Integer.parseInt(Configuration.amqpPort()), Configuration.keyStorePath(), Configuration.keyStorePassword() );
 	}
 
 	public static void setupLogging() {

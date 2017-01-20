@@ -36,7 +36,6 @@
  * limitations under the License.
  * #L%
  */
-
 package de.hshannover.f4.trust.ironvas;
 
 import java.io.IOException;
@@ -51,23 +50,27 @@ import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
-
+/**
+ * The <code>AmqpPublisher</code> is responsible for publishing and managing IronvasEvents.
+ *
+ * @author Marius Rohde
+ *
+ */
 public class AmqpPublisher implements Runnable {
-	
-	
-	
+
 	private LinkedBlockingQueue<Report> mWorkQueue = new LinkedBlockingQueue<Report>();
-	
+
 	private Channel mAmqpChannel;
 	private String mExhangeName;
+	private String mIfMapPublisherId;
 	protected VulnerabilityCache mCache = new VulnerabilityCache();
-	
+
 	private static final Logger LOGGER = Logger
 			.getLogger(VulnerabilityHandler.class.getName());
-	
-	
-	public AmqpPublisher(Connection connection, String exhangeName ) {
+
+	public AmqpPublisher(Connection connection, String exhangeName, String ifMapPublisherId) {
 		mExhangeName = exhangeName;
+		mIfMapPublisherId = ifMapPublisherId;
 		try {
 			mAmqpChannel = connection.createChannel();
 		} catch (IOException e) {
@@ -75,6 +78,19 @@ public class AmqpPublisher implements Runnable {
 			System.exit(1);
 		}
 	}
+
+	/**
+	 * Run the handler loop. The following steps are performed:
+	 * <p>
+	 * 1. Wait for new vulnerabilities in the queue.<br>
+	 * 2. If new vulnerabilities arrive:<br>
+	 * 2.1. Check the arrived set for new vulnerabilities, not known in the cache.<br>
+	 * 2.2. Check the cache for out-dated vulnerabilities.<br>
+	 * 2.3. Remove the out-dated vulnerabilities from the cache.<br>
+	 * 2.4. Add the new vulnerabilities to the cache.<br>
+	 * 2.5. Send a Ironvas Event to the AMQP Queue including update elements for the new and delete elements for the
+	 * out-dated vulnerabilities. 3. Start at 1. again.
+	 */
 
 	@Override
 	public void run() {
@@ -99,58 +115,78 @@ public class AmqpPublisher implements Runnable {
 		} finally {
 			LOGGER.info("shutdown complete.");
 		}
-		
+
 	}
-	
+
 	public void onNewReport(Report report) {
-		
+
 		String taskId = report.mTaskId;
-		
-		List<Vulnerability> vulnerabilities = report.mVulnerabilities;		
+
+		List<Vulnerability> vulnerabilities = report.mVulnerabilities;
 		Set<Vulnerability> news = mCache.indicateNew(taskId, vulnerabilities);
 		Set<Vulnerability> outDated = mCache.indicateOutDated(taskId,
 				vulnerabilities);
 		updateCache(taskId, news, outDated);
-				
-		if (!news.isEmpty()){
-			
-			try {
-				
-				for (Vulnerability vul : news){
-										
-					IronvasEvent event = new IronvasEvent(vul.getId(), 
-							vul.getTimestamp(),
-							vul.getSubnet(), 
-							vul.getHost(), 
-							vul.getPort(), 
-							vul.getThreat(), 
-							vul.getDescription(), 
-							vul.getNvt().getOid(),
-							vul.getNvt().getName(),
-							vul.getNvt().getCvssBase(),
-							vul.getNvt().getRiskFactor(),
-							vul.getNvt().getCve(),
-							vul.getNvt().getBid()
-							);
-							
-					byte[] eventData = SerializationUtils.serialize(event);
-					
-					mAmqpChannel.basicPublish(mExhangeName, "", null, eventData);					
-				}				
-				
-			} catch (IOException e) {
-				LOGGER.severe("Can't publish IronvasEvent to AMQP exchanger");
+
+		try {
+
+			for (Vulnerability vul : news) {
+
+				IronvasEvent event = new IronvasEvent(vul.getId(),
+						vul.getTimestamp(),
+						vul.getSubnet(),
+						vul.getHost(),
+						vul.getPort(),
+						vul.getThreat(),
+						vul.getDescription(),
+						vul.getNvt().getOid(),
+						vul.getNvt().getName(),
+						vul.getNvt().getCvssBase(),
+						vul.getNvt().getRiskFactor(),
+						vul.getNvt().getCve(),
+						vul.getNvt().getBid(),
+						mIfMapPublisherId,
+						true);
+
+				byte[] eventData = SerializationUtils.serialize(event);
+
+				mAmqpChannel.basicPublish(mExhangeName, "", null, eventData);
 			}
-		}	
+
+			for (Vulnerability vul : outDated) {
+
+				IronvasEvent event = new IronvasEvent(vul.getId(),
+						vul.getTimestamp(),
+						vul.getSubnet(),
+						vul.getHost(),
+						vul.getPort(),
+						vul.getThreat(),
+						vul.getDescription(),
+						vul.getNvt().getOid(),
+						vul.getNvt().getName(),
+						vul.getNvt().getCvssBase(),
+						vul.getNvt().getRiskFactor(),
+						vul.getNvt().getCve(),
+						vul.getNvt().getBid(),
+						mIfMapPublisherId,
+						false);
+
+				byte[] eventData = SerializationUtils.serialize(event);
+
+				mAmqpChannel.basicPublish(mExhangeName, "", null, eventData);
+			}
+
+		} catch (IOException e) {
+			LOGGER.severe("Can't publish IronvasEvent to AMQP exchanger");
+		}
 	}
-	
+
 	public void updateCache(String taskId, Set<Vulnerability> news,
 			Set<Vulnerability> outDated) {
 		mCache.removeFromTask(taskId, outDated);
 		mCache.addToTask(taskId, news);
 	}
-	
-	
+
 	/**
 	 * Submit a list of vulnerabilities to this {@link VulnerabilityHandler}.
 	 *

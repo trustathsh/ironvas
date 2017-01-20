@@ -102,6 +102,7 @@ public final class Configuration {
 
 	// amqp eventstream
 	private static final String EVENTSTREAM_ENABLE = "ironvas.eventstream.enable";
+	private static final String AMQP_TLS = "amqp.server.tls.enable";
 	private static final String AMQP_IP = "amqp.server.ip";
 	private static final String AMQP_PORT = "amqp.server.port";
 	private static final String AMQP_SERVER_VIRTUALHOST = "amqp.server.virtualhost";
@@ -251,6 +252,10 @@ public final class Configuration {
 		return get(EVENTSTREAM_ENABLE);
 	}
 
+	public static boolean amqpTlsEnable() {
+		return get(AMQP_TLS).equals("true");
+	}
+	
 	public static String amqpIp() {
 		return get(AMQP_IP);
 	}

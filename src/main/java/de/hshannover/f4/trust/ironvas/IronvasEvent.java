@@ -43,6 +43,13 @@ package de.hshannover.f4.trust.ironvas;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * This class contains informations related to a vulnerability detected by
+ * OpenVAS with direct access dedicated to the event stream mode.
+ *
+ * @author Marius Rohde
+ *
+ */
 public class IronvasEvent implements Serializable{
 
 	/**
@@ -61,7 +68,8 @@ public class IronvasEvent implements Serializable{
     private final String mBid;
     
     private final String mId;
-    private Date mTimestamp;
+    private Date mOpenvasTimestamp;
+    private Date mIronvasTimestamp;
     
     private final String mSubnet;
     private final String mHost;
@@ -69,10 +77,16 @@ public class IronvasEvent implements Serializable{
 
     private final ThreatLevel mThreat;
     private final String mDescription;
+    
+    private final String mIfMapPublisherID;
+    
+    private final boolean mNewEventFlag;
+
+   
 
     public IronvasEvent(String id, Date timestamp, String subnet, String host,
             String port, ThreatLevel threat, String description, String oid, String name, float cvssBase,
-            RiskfactorLevel riskFactor, String cve, String bid) {
+            RiskfactorLevel riskFactor, String cve, String bid, String ifMapPublisherID, boolean newEvent) {
         
     	this.mId = id;
         this.mSubnet = subnet;
@@ -86,59 +100,76 @@ public class IronvasEvent implements Serializable{
         this.mRiskFactor = riskFactor;
         this.mCve = cve;
         this.mBid = bid;
-        this.mTimestamp = new Date(timestamp.getTime());
+        this.mOpenvasTimestamp = new Date(timestamp.getTime());
+        this.mIronvasTimestamp = new Date();
+        this.mIfMapPublisherID = ifMapPublisherID;
+        this.mNewEventFlag = newEvent;
     }
     
-    public String getmOid() {
+
+
+	public String getOid() {
 		return mOid;
 	}
 
-	public String getmName() {
+	public String getName() {
 		return mName;
 	}
 
-	public float getmCvssBase() {
+	public float getCvssBase() {
 		return mCvssBase;
 	}
 
-	public RiskfactorLevel getmRiskFactor() {
+	public RiskfactorLevel getRiskFactor() {
 		return mRiskFactor;
 	}
 
-	public String getmCve() {
+	public String getCve() {
 		return mCve;
 	}
 
-	public String getmBid() {
+	public String getBid() {
 		return mBid;
 	}
 
-	public String getmId() {
+	public String getId() {
 		return mId;
 	}
 
-	public Date getmTimestamp() {
-		return mTimestamp;
+	public Date getOpenvasTimestamp() {
+		return mOpenvasTimestamp;
+	}
+	
+	public Date getIronvasTimestamp() {
+		return mIronvasTimestamp;
 	}
 
-	public String getmSubnet() {
+	public String getSubnet() {
 		return mSubnet;
 	}
 
-	public String getmHost() {
+	public String getHost() {
 		return mHost;
 	}
 
-	public String getmPort() {
+	public String getPort() {
 		return mPort;
 	}
 
-	public ThreatLevel getmThreat() {
+	public ThreatLevel getThreat() {
 		return mThreat;
 	}
 
-	public String getmDescription() {
+	public String getDescription() {
 		return mDescription;
-	}   
+	}
+	
+    public String getIfMapPublisherID() {
+		return mIfMapPublisherID;
+	}
+    
+    public boolean getNewEventFlag(){
+    	return mNewEventFlag;
+    }
 	
 }
