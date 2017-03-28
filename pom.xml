@@ -198,6 +198,11 @@
 			<version>2.10.3</version>
 		</dependency>
 		<dependency>
+            <groupId>de.decoit.clearer</groupId>
+            <artifactId>event-pojos</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+		<dependency>
     		<groupId>com.rabbitmq</groupId>
     		<artifactId>amqp-client</artifactId>
     		<version>4.0.1</version>
@@ -210,7 +215,7 @@
 		<dependency>
     		<groupId>org.apache.commons</groupId>
     		<artifactId>commons-lang3</artifactId>
-    	<version>3.0</version>
-</dependency>
+    		<version>3.0</version>
+		</dependency>
 	</dependencies>
 </project>

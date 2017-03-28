@@ -76,6 +76,7 @@ class OmpParser {
    */
   val locale = Locale.ENGLISH
   val cDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", locale)
+  val parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
   def getVersionResponse(xml: Elem) = {
     val statusCode = status(xml)
@@ -166,7 +167,7 @@ class OmpParser {
       } yield { // process the values and finally yield the current vulnerability
         val base = parseCvssBase(nvt_cvss_base)
         val risk = parseRiskFactorLevel(nvt_risk_factor)
-        val dateParsed = parseDate(date)
+        val dateParsed = parser.parse(date)
         val threat = parseThreatLevel(threatLevel)
 
         val n = new Nvt(nvt_oid, nvt_name, base, risk, nvt_cve, nvt_bid)

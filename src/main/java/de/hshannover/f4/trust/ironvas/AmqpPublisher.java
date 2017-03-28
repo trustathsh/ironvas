@@ -50,6 +50,10 @@ import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
+import de.hshannover.f4.trust.clearer.event.ironvas.IronvasEvent;
+import de.hshannover.f4.trust.ironvas.utils.RiskfactorLevelConverter;
+import de.hshannover.f4.trust.ironvas.utils.ThreatLevelConverter;
+
 /**
  * The <code>AmqpPublisher</code> is responsible for publishing and managing IronvasEvents.
  *
@@ -132,17 +136,19 @@ public class AmqpPublisher implements Runnable {
 
 			for (Vulnerability vul : news) {
 
+				
+
 				IronvasEvent event = new IronvasEvent(vul.getId(),
 						vul.getTimestamp(),
 						vul.getSubnet(),
 						vul.getHost(),
 						vul.getPort(),
-						vul.getThreat(),
+						ThreatLevelConverter.convertThreatLevelToClearer(vul.getThreat()),
 						vul.getDescription(),
 						vul.getNvt().getOid(),
 						vul.getNvt().getName(),
 						vul.getNvt().getCvssBase(),
-						vul.getNvt().getRiskFactor(),
+						RiskfactorLevelConverter.convertRiskfactorLevelToClearer(vul.getNvt().getRiskFactor()),
 						vul.getNvt().getCve(),
 						vul.getNvt().getBid(),
 						mIfMapPublisherId,
@@ -160,12 +166,12 @@ public class AmqpPublisher implements Runnable {
 						vul.getSubnet(),
 						vul.getHost(),
 						vul.getPort(),
-						vul.getThreat(),
+						ThreatLevelConverter.convertThreatLevelToClearer(vul.getThreat()),
 						vul.getDescription(),
 						vul.getNvt().getOid(),
 						vul.getNvt().getName(),
 						vul.getNvt().getCvssBase(),
-						vul.getNvt().getRiskFactor(),
+						RiskfactorLevelConverter.convertRiskfactorLevelToClearer(vul.getNvt().getRiskFactor()),
 						vul.getNvt().getCve(),
 						vul.getNvt().getBid(),
 						mIfMapPublisherId,

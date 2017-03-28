@@ -101,6 +101,16 @@ public class Ironvas implements Runnable {
 		mShutdownHook = new ShutdownHook();
 		mAmqpPublisher = null;
 		
+		try {
+			mSsrc.newSession();
+			mSsrc.purgePublisher();
+
+		} catch (Exception e) {
+			System.err.println("could not connect to ifmap server: "
+					+ e);
+			System.exit(1);
+		}
+		
 		if(Configuration.eventstreamEnable().equals("true")){  // String if it later gets a both feature
 			mAmqpConnection = initAMQP();
 			mAmqpPublisher = new AmqpPublisher(mAmqpConnection, Configuration.amqpExchangeName(), mSsrc.getPublisherId());
@@ -149,16 +159,6 @@ public class Ironvas implements Runnable {
 				&& !Configuration.subscriberEnable()) {
 			LOGGER.warning("nothing to do, shutting down ...");
 			System.exit(0);
-		}
-
-		try {
-			mSsrc.newSession();
-			mSsrc.purgePublisher();
-
-		} catch (Exception e) {
-			System.err.println("could not connect to ifmap server: "
-					+ e);
-			System.exit(1);
 		}
 
 		mSsrcKeepaliveThread.start();
