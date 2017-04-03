@@ -1,10 +1,10 @@
 ironvas
 =======
 ironvas is a *highly experimental* integration of Open Vulnerability
-Assessment System ([OpenVAS] [1]) into a MAP-Infrastructure. The integration
-aims to share security related informations (vulnerabilities
-detected by OpenVAS) with other network components in the [TNC architecture] [2]
-via IF-MAP.
+Assessment System ([OpenVAS] [1]) into a MAP-Infrastructure and the CLEARER project Infrastructure [CLEARER Project][2]. 
+The integration aims to share security related informations (vulnerabilities
+detected by OpenVAS) with other network components in the [TNC architecture] [3]
+via IF-MAP and CLEARER. Currently this version only works with in CLEARER defined event pojos. 
 
 [![Build Status](https://travis-ci.org/trustathsh/ironvas.png)](https://travis-ci.org/trustathsh/ironvas)
 
@@ -54,7 +54,7 @@ To use the binary package of ironvas you need the following components:
 
 * OpenJDK Version 1.6 or higher
 * OpenVAS-4 or higher
-* MAP server implementation (e.g. [irond] [3])
+* MAP server implementation (e.g. [irond] [4])
 
 If you have downloaded the source code and want to build ironvas by
 yourself Maven 3 is also needed.
@@ -109,7 +109,7 @@ If you have any questions, problems or comments, please contact
 
 LICENSE
 =======
-ironvas is licensed under the [Apache License, Version 2.0] [4].
+ironvas is licensed under the [Apache License, Version 2.0] [5].
 
 
 Note
@@ -122,7 +122,8 @@ Feel free to fork/contribute.
 
 
 [1]: http://www.openvas.org
-[2]: http://www.trustedcomputinggroup.org/developers/trusted_network_connect
-[3]: https://github.com/trustathsh
-[4]: http://www.apache.org/licenses/LICENSE-2.0.html
+[2]: http://www.clearer-project.de/index.php/en/homepage.html
+[3]: http://www.trustedcomputinggroup.org/developers/trusted_network_connect
+[4]: https://github.com/trustathsh
+[5]: http://www.apache.org/licenses/LICENSE-2.0.html
 [githubrepo]: https://github.com/trustathsh/ironvas

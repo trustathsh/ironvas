@@ -139,7 +139,7 @@ public class AmqpPublisher implements Runnable {
 				
 
 				IronvasEvent event = new IronvasEvent(vul.getId(),
-						vul.getTimestamp(),
+						vul.getTimestamp().getTime(),
 						vul.getSubnet(),
 						vul.getHost(),
 						vul.getPort(),
@@ -162,7 +162,7 @@ public class AmqpPublisher implements Runnable {
 			for (Vulnerability vul : outDated) {
 
 				IronvasEvent event = new IronvasEvent(vul.getId(),
-						vul.getTimestamp(),
+						vul.getTimestamp().getTime(),
 						vul.getSubnet(),
 						vul.getHost(),
 						vul.getPort(),
