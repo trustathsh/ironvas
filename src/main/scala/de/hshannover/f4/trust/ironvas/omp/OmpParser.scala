@@ -167,7 +167,7 @@ class OmpParser {
       } yield { // process the values and finally yield the current vulnerability
         val base = parseCvssBase(nvt_cvss_base)
         val risk = parseRiskFactorLevel(nvt_risk_factor)
-        val dateParsed = parser.parse(date)
+        val dateParsed = parseDate(date)
         val threat = parseThreatLevel(threatLevel)
 
         val n = new Nvt(nvt_oid, nvt_name, base, risk, nvt_cve, nvt_bid)
@@ -306,7 +306,10 @@ class OmpParser {
   def parseDate(dateString: String): Date = try {
     cDateFormat.parse(dateString)
   } catch {
-    case e: ParseException => new Date(0)
+    case e: ParseException => 
+      try { parser.parse(dateString) }catch{
+        case e: ParseException => new Date(0)
+      }
   }
 
   /**
