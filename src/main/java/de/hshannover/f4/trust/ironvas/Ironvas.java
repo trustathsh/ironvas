@@ -41,8 +41,9 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 import de.hshannover.f4.trust.ifmapj.IfmapJ;
 import de.hshannover.f4.trust.ifmapj.channel.SSRC;
@@ -74,12 +75,14 @@ public class Ironvas implements Runnable {
 	private SSRC mSsrc;
 	private OmpConnection mOmp;
 	private Keepalive mSsrcKeepalive;
-	private Connection mAmqpConnection;
+	private Connection mAmqpPublishConnection;
+	private Connection mAmqpSubscribeConnection;
 
 	private Converter mConverter;
 	private VulnerabilityHandler mHandler;
 	private VulnerabilityFetcher mFetcher;
 	private AmqpPublisher mAmqpPublisher;
+	private AmqpSubscriber mAmqpSubscriber;
 
 	private Subscriber mSubscriber;
 
@@ -100,7 +103,7 @@ public class Ironvas implements Runnable {
 		mOmp = initOmp();
 		mShutdownHook = new ShutdownHook();
 		mAmqpPublisher = null;
-		
+
 		try {
 			mSsrc.newSession();
 			mSsrc.purgePublisher();
@@ -110,20 +113,34 @@ public class Ironvas implements Runnable {
 					+ e);
 			System.exit(1);
 		}
-		
-		if(Configuration.eventstreamEnable().equals("true")){  // String if it later gets a both feature
-			mAmqpConnection = initAMQP();
-			mAmqpPublisher = new AmqpPublisher(mAmqpConnection, Configuration.amqpExchangeName(), mSsrc.getPublisherId());
-			mAmqpPublisherThread = new Thread(mAmqpPublisher, "amqp-publischer-thread");
+
+		if (Configuration.eventstreamPublishEnable().equals("true")) {  // String if it later gets a both feature
+			mAmqpPublishConnection = initAMQPPublisher();
+			mAmqpPublisher = new AmqpPublisher(mAmqpPublishConnection, Configuration.amqpPublishExchangeName(),
+					mSsrc.getPublisherId());
+			mAmqpPublisherThread = new Thread(mAmqpPublisher, "amqp-publisher-thread");
 			mShutdownHook.add(mAmqpPublisherThread);
-		}		
-		
+		}
+
+		if (Configuration.eventstreamSubscribeEnable().equals("true")) {
+			if (Configuration.amqpSharePublishConnection()) {
+				mAmqpSubscribeConnection = initAMQPPublisher();
+			} else {
+				mAmqpSubscribeConnection = initAMQPSubscriber();
+			}
+
+			// TODO: Shutdown hook für internen AMQP Thread notwendig?
+			mAmqpSubscriber = new AmqpSubscriber(mOmp, mAmqpSubscribeConnection, Configuration.amqpSubscribeQueueName(),
+					Configuration.amqpSubscribeDurable(),
+					Configuration.amqpSubscribeDefaultConfigName());
+		}
+
 		mSsrcKeepalive = new Keepalive(mSsrc, Configuration.ifmapKeepalive());
 
 		mConverter = createConverter(mSsrc, mOmp);
 		mHandler = new VulnerabilityHandler(mSsrc, mConverter, Configuration.selfPublishDevice(),
-				Configuration.eventstreamEnable());
-		
+				Configuration.eventstreamPublishEnable());
+
 		VulnerabilityFilter vulnerabilityFilter = null;
 		try {
 			vulnerabilityFilter = new ScriptableFilter();
@@ -132,7 +149,7 @@ public class Ironvas implements Runnable {
 		} catch (FilterInitializationException e) {
 			LOGGER.warning("could not load filter.js, falling back to no filtering");
 			mFetcher = new VulnerabilityFetcher(mHandler, mOmp,
-					Configuration.publishInterval(),mAmqpPublisher);
+					Configuration.publishInterval(), mAmqpPublisher);
 		}
 
 		mSubscriber = new Subscriber(mOmp, mSsrc, Configuration.subscriberPdp(),
@@ -144,12 +161,12 @@ public class Ironvas implements Runnable {
 		mFetcherThread = new Thread(mFetcher, "fetcher-thread");
 		mSubscriberThread = new Thread(mSubscriber, "subscriber-thread");
 		mSsrcKeepaliveThread = new Thread(mSsrcKeepalive, "ssrc-keepalive-thread");
-		
+
 		mShutdownHook.add(mHandlerThread);
 		mShutdownHook.add(mFetcherThread);
-		mShutdownHook.add(mSubscriberThread);		
+		mShutdownHook.add(mSubscriberThread);
 		mShutdownHook.add(mSsrcKeepaliveThread);
-		
+
 		Runtime.getRuntime().addShutdownHook(new Thread(mShutdownHook));
 	}
 
@@ -195,16 +212,19 @@ public class Ironvas implements Runnable {
 			LOGGER.info("activate publisher ...");
 			mHandlerThread.start();
 			mFetcherThread.start();
-			
-			if(Configuration.eventstreamEnable().equals("true")){
+
+			if (Configuration.eventstreamPublishEnable().equals("true")) {
 				LOGGER.info("activate AMQP publisher ...");
 				mAmqpPublisherThread.start();
 			}
+
 		}
+		// TODO: rename Configuration.subscriberEnable() option? Add option to enable both?
 		if (Configuration.subscriberEnable()) {
 			LOGGER.info("activate subscriber ...");
 			mSubscriberThread.start();
 		}
+
 	}
 
 	public static void main(String[] args) {
@@ -357,11 +377,11 @@ public class Ironvas implements Runnable {
 	 * @param portNumber
 	 * @param keyStorePath
 	 * @param keyStorePassword
-	 * @return 
+	 * @return
 	 */
 	public static Connection initAMQP(String eventStreamEnabled, boolean tlsEnable, String userName, String password,
 			String virtualHost, String hostName, Integer portNumber, String keyStorePath, String keyStorePassword) {
-		
+
 		Connection connection = null;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setUsername(userName);
@@ -369,46 +389,54 @@ public class Ironvas implements Runnable {
 		factory.setVirtualHost(virtualHost);
 		factory.setHost(hostName);
 		factory.setPort(portNumber);
-		if(eventStreamEnabled.equals("true")){
-			if(tlsEnable){
+		if (eventStreamEnabled.equals("true")) {
+			if (tlsEnable) {
 				try {
-				
-			        KeyStore tks = KeyStore.getInstance("JKS");
-			        tks.load(Ironvas.class.getResourceAsStream(keyStorePath), keyStorePassword.toCharArray());
-			
-			        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-			        tmf.init(tks);
-			
-			        SSLContext c = SSLContext.getInstance("TLSv1.2");
-			        c.init(null, tmf.getTrustManagers(), null);
-			        factory.useSslProtocol(c);
-			        
+
+					KeyStore tks = KeyStore.getInstance("JKS");
+					tks.load(Ironvas.class.getResourceAsStream(keyStorePath), keyStorePassword.toCharArray());
+
+					TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+					tmf.init(tks);
+
+					SSLContext c = SSLContext.getInstance("TLSv1.2");
+					c.init(null, tmf.getTrustManagers(), null);
+					factory.useSslProtocol(c);
+
 				} catch (KeyStoreException e1) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e1);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e1);
 				} catch (NoSuchAlgorithmException e) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e);
 				} catch (CertificateException e) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e);
 				} catch (FileNotFoundException e) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e);
 				} catch (IOException e) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e);
 				} catch (KeyManagementException e) {
-					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+					LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+							+ e);
 				}
-				
+
 			}
 			try {
 				connection = factory.newConnection();
 			} catch (IOException e) {
-				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+						+ e);
 				System.exit(1);
 			} catch (TimeoutException e) {
-				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."+ e);
+				LOGGER.severe("Cannot establish connection to AMQP, shutting down ..."
+						+ e);
 				System.exit(1);
-			}			
-			
-		}		
+			}
+
+		}
 
 		return connection;
 
@@ -419,10 +447,25 @@ public class Ironvas implements Runnable {
 	 *
 	 * @return
 	 */
-	public static Connection initAMQP() {
-		return initAMQP(Configuration.eventstreamEnable(), Configuration.amqpTlsEnable(), Configuration.amqpUserName(), Configuration.amqpPassword(),
-				Configuration.amqpVirtualHost(), Configuration.amqpIp(),
-				Integer.parseInt(Configuration.amqpPort()), Configuration.keyStorePath(), Configuration.keyStorePassword() );
+	public static Connection initAMQPPublisher() {
+		return initAMQP(Configuration.eventstreamPublishEnable(), Configuration.amqpPublishTlsEnable(),
+				Configuration.amqpPublishUserName(), Configuration.amqpPublishPassword(),
+				Configuration.amqpPublishVirtualHost(), Configuration.amqpPublishIp(),
+				Integer.parseInt(Configuration.amqpPublishPort()), Configuration.keyStorePath(),
+				Configuration.keyStorePassword());
+	}
+
+	/**
+	 * Creates an {@link AMQP.Connection} instance based on the values in {@link Configuration}.
+	 *
+	 * @return
+	 */
+	public static Connection initAMQPSubscriber() {
+		return initAMQP(Configuration.eventstreamPublishEnable(), Configuration.amqpSubscribeTlsEnable(),
+				Configuration.amqpSubscribeUserName(), Configuration.amqpSubscribePassword(),
+				Configuration.amqpSubscribeVirtualHost(), Configuration.amqpSubscribeIp(),
+				Integer.parseInt(Configuration.amqpSubscribePort()), Configuration.keyStorePath(),
+				Configuration.keyStorePassword());
 	}
 
 	public static void setupLogging() {

@@ -38,6 +38,7 @@
  */
 package de.hshannover.f4.trust.ironvas;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,14 +102,28 @@ public final class Configuration {
 	private static final String SUBSCRIBER_CONFIG = "ironvas.subscriber.config";
 
 	// amqp eventstream
-	private static final String EVENTSTREAM_ENABLE = "ironvas.eventstream.enable";
-	private static final String AMQP_TLS = "amqp.server.tls.enable";
-	private static final String AMQP_IP = "amqp.server.ip";
-	private static final String AMQP_PORT = "amqp.server.port";
-	private static final String AMQP_SERVER_VIRTUALHOST = "amqp.server.virtualhost";
-	private static final String AMQP_EXCHANGE_NAME = "amqp.exchange.name";
-	private static final String AMQP_USER_NAME = "amqp.user.name";
-	private static final String AMQP_USER_PASSWORD = "amqp.user.password";
+	private static final String EVENTSTREAM_SUBSCRIBE_ENABLE = "ironvas.eventstream.subscribe.enable";
+	private static final String EVENTSTREAM_PUBLISH_ENABLE = "ironvas.eventstream.publish.enable";
+	private static final String AMQP_PUBLISH_TLS = "amqp.publish.server.tls.enable";
+	private static final String AMQP_PUBLISH_IP = "amqp.publish.server.ip";
+	private static final String AMQP_PUBLISH_PORT = "amqp.publish.server.port";
+	private static final String AMQP_PUBLISH_SERVER_VIRTUALHOST = "amqp.publish.server.virtualhost";
+	private static final String AMQP_PUBLISH_EXCHANGE_NAME = "amqp.publish.exchange.name";
+	private static final String AMQP_PUBLISH_USER_NAME = "amqp.publish.user.name";
+	private static final String AMQP_PUBLISH_USER_PASSWORD = "amqp.publish.user.password";
+	
+	private static final String AMQP_SUBSCRIBE_TLS = "amqp.subscribe.server.tls.enable";
+	private static final String AMQP_SUBSCRIBE_IP = "amqp.subscribe.server.ip";
+	private static final String AMQP_SUBSCRIBE_PORT = "amqp.subscribe.server.port";
+	private static final String AMQP_SUBSCRIBE_SERVER_VIRTUALHOST = "amqp.subscribe.server.virtualhost";
+	private static final String AMQP_SUBSCRIBE_USER_NAME = "amqp.subscribe.user.name";
+	private static final String AMQP_SUBSCRIBE_USER_PASSWORD = "amqp.subscribe.user.password";
+	private static final String AMQP_SUBSCRIBE_QUEUE_NAME = "amqp.subscribe.queue.name";
+	private static final String AMQP_SUBSCRIBE_QUEUE_DURABLE = "amqp.subscribe.queue.durable";
+
+	private static final String AMQP_SHARE_PUBLISH_CONNECTION = "amqp.share_publish_connection";
+	private static final String AMQP_SUBSCRIBE_DEFAULT_CONFIG_NAME = "amqp.subscriber.defaultconfig";
+	private static final String AMQP_SUBSCRIBE_ALLOW_DELETE_EVENT = "amqp.subscriber.allowdeleteevent";
 
 	// end configuration parameter ---------------------------------------------
 
@@ -248,37 +263,83 @@ public final class Configuration {
 		return get(OPENVAS_VERSION);
 	}
 
-	public static String eventstreamEnable() {
-		return get(EVENTSTREAM_ENABLE);
-	}
-
-	public static boolean amqpTlsEnable() {
-		return get(AMQP_TLS).equals("true");
+	public static String eventstreamPublishEnable() {
+		return get(EVENTSTREAM_PUBLISH_ENABLE);
 	}
 	
-	public static String amqpIp() {
-		return get(AMQP_IP);
+	public static String eventstreamSubscribeEnable() {
+		return get(EVENTSTREAM_SUBSCRIBE_ENABLE);
 	}
 
-	public static String amqpPort() {
-		return get(AMQP_PORT);
-	}
-
-	public static String amqpExchangeName() {
-		return get(AMQP_EXCHANGE_NAME);
-	}
-
-	public static String amqpUserName() {
-		return get(AMQP_USER_NAME);
-	}
-
-	public static String amqpPassword() {
-		return get(AMQP_USER_PASSWORD);
+	public static boolean amqpPublishTlsEnable() {
+		return get(AMQP_PUBLISH_TLS).equals("true");
 	}
 	
-	public static String amqpVirtualHost() {
-		return get(AMQP_SERVER_VIRTUALHOST);
+	public static String amqpPublishIp() {
+		return get(AMQP_PUBLISH_IP);
+	}
+
+	public static String amqpPublishPort() {
+		return get(AMQP_PUBLISH_PORT);
+	}
+
+	public static String amqpPublishExchangeName() {
+		return get(AMQP_PUBLISH_EXCHANGE_NAME);
+	}
+
+	public static String amqpPublishUserName() {
+		return get(AMQP_PUBLISH_USER_NAME);
+	}
+
+	public static String amqpPublishPassword() {
+		return get(AMQP_PUBLISH_USER_PASSWORD);
 	}
 	
+	public static String amqpPublishVirtualHost() {
+		return get(AMQP_PUBLISH_SERVER_VIRTUALHOST);
+	}
+	
+	public static boolean amqpSubscribeTlsEnable() {
+		return get(AMQP_SUBSCRIBE_TLS).equals("true");
+	}
+	
+	public static String amqpSubscribeIp() {
+		return get(AMQP_SUBSCRIBE_IP);
+	}
 
+	public static String amqpSubscribePort() {
+		return get(AMQP_SUBSCRIBE_PORT);
+	}
+
+	public static String amqpSubscribeUserName() {
+		return get(AMQP_SUBSCRIBE_USER_NAME);
+	}
+
+	public static String amqpSubscribePassword() {
+		return get(AMQP_SUBSCRIBE_USER_PASSWORD);
+	}
+	
+	public static String amqpSubscribeVirtualHost() {
+		return get(AMQP_SUBSCRIBE_SERVER_VIRTUALHOST);
+	}	
+
+	public static String amqpSubscribeQueueName() {
+		return get(AMQP_SUBSCRIBE_QUEUE_NAME);
+	}
+	
+	public static boolean amqpSharePublishConnection() {
+		return get(AMQP_SHARE_PUBLISH_CONNECTION).equals("true");
+	}
+	
+	public static boolean amqpSubscribeDurable() {
+		return get(AMQP_SUBSCRIBE_QUEUE_DURABLE).equals("true");
+	}
+	
+	public static String amqpSubscribeDefaultConfigName() {
+		return get(AMQP_SUBSCRIBE_DEFAULT_CONFIG_NAME);
+	}
+	
+	public static boolean amqpSubscribeAllowDeleteEvent() {
+		return get(AMQP_SUBSCRIBE_ALLOW_DELETE_EVENT).equals("true");
+	}	
 }
