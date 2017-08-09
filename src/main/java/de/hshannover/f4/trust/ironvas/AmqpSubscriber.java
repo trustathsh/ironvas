@@ -76,12 +76,11 @@ public class AmqpSubscriber {
 	private Channel mAmqpChannel;
 	private final String mQueueName;
 	private final boolean mDurable;
-	private final String mConfigName;
+	private final String mDefaultConfigName;
 	private Config mDefaultOpenVASTaskConfig = null;
 
 	private final Map<String, Config> mConfigCache = new HashMap<>();
 	private final ObjectMapper mObjMapper;
-	protected VulnerabilityCache mCache = new VulnerabilityCache();
 
 	private static final Logger LOGGER = Logger.getLogger(VulnerabilityHandler.class.getName());
 
@@ -106,7 +105,7 @@ public class AmqpSubscriber {
 		this.mOmp = mOmp;
 		this.mAmqpConnection = connection;
 		this.mQueueName = queueName;
-		this.mConfigName = defaultConfigName;
+		this.mDefaultConfigName = defaultConfigName;
 		this.mDurable = durable;
 		CBORFactory fac = new CBORFactory();
 		mObjMapper = new ObjectMapper(fac);
@@ -325,7 +324,7 @@ public class AmqpSubscriber {
 		if (res == null) {
 			LOGGER.info("The config specified in the Event (\""
 					+ name + "\") can't be found on OpenVAS. Using the default config '"
-					+ mConfigName + "'.");
+					+ mDefaultConfigName + "'.");
 			return mDefaultOpenVASTaskConfig;
 		}
 		return res;
@@ -342,13 +341,13 @@ public class AmqpSubscriber {
 		while (configsIterator.hasNext()) {
 			Config c = configsIterator.next();
 			mConfigCache.put(c.name(), c);
-			if (c.name().equals(mConfigName)) {
+			if (c.name().equals(mDefaultConfigName)) {
 				mDefaultOpenVASTaskConfig = c;
 			}
 		}
 
 		if (mDefaultOpenVASTaskConfig == null) {
-			LOGGER.warning(String.format("no  default config '%s' found, shutting down the %s...", mConfigName,
+			LOGGER.warning(String.format("no  default config '%s' found, shutting down the %s...", mDefaultConfigName,
 					this.getClass().getSimpleName()));
 			// We don't start the amqp connection on error.
 			return;
