@@ -45,10 +45,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.SerializationUtils;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.AMQP.BasicProperties;
 
 import de.hshannover.f4.trust.clearer.event.ironvas.IronvasEvent;
 import de.hshannover.f4.trust.ironvas.utils.RiskfactorLevelConverter;
@@ -68,6 +69,7 @@ public class AmqpPublisher implements Runnable {
 	private String mExhangeName;
 	private String mIfMapPublisherId;
 	protected VulnerabilityCache mCache = new VulnerabilityCache();
+	private ObjectMapper objMapper;
 
 	private static final Logger LOGGER = Logger
 			.getLogger(VulnerabilityHandler.class.getName());
@@ -75,6 +77,9 @@ public class AmqpPublisher implements Runnable {
 	public AmqpPublisher(Connection connection, String exhangeName, String ifMapPublisherId) {
 		mExhangeName = exhangeName;
 		mIfMapPublisherId = ifMapPublisherId;
+        CBORFactory fac = new CBORFactory();
+        objMapper = new ObjectMapper(fac);
+		
 		try {
 			mAmqpChannel = connection.createChannel();
 		} catch (IOException e) {
@@ -131,12 +136,13 @@ public class AmqpPublisher implements Runnable {
 		Set<Vulnerability> outDated = mCache.indicateOutDated(taskId,
 				vulnerabilities);
 		updateCache(taskId, news, outDated);
-
+		
 		try {
-
-			for (Vulnerability vul : news) {
-
-				
+			
+			final BasicProperties.Builder properties = new BasicProperties.Builder().contentType("application/cbor");
+			BasicProperties props = properties.build();
+			
+			for (Vulnerability vul : news) {				
 
 				IronvasEvent event = new IronvasEvent(vul.getId(),
 						vul.getTimestamp().getTime(),
@@ -154,9 +160,9 @@ public class AmqpPublisher implements Runnable {
 						mIfMapPublisherId,
 						true);
 
-				byte[] eventData = SerializationUtils.serialize(event);
-
-				mAmqpChannel.basicPublish(mExhangeName, "", null, eventData);
+				byte[] eventData = objMapper.writeValueAsBytes(event);
+				
+				mAmqpChannel.basicPublish(mExhangeName, "", props, eventData);
 			}
 
 			for (Vulnerability vul : outDated) {
@@ -176,10 +182,9 @@ public class AmqpPublisher implements Runnable {
 						vul.getNvt().getBid(),
 						mIfMapPublisherId,
 						false);
+				byte[] eventData = objMapper.writeValueAsBytes(event);
 
-				byte[] eventData = SerializationUtils.serialize(event);
-
-				mAmqpChannel.basicPublish(mExhangeName, "", null, eventData);
+				mAmqpChannel.basicPublish(mExhangeName, "", props, eventData);
 			}
 
 		} catch (IOException e) {
