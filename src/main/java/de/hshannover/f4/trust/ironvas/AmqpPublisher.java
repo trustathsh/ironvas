@@ -80,6 +80,7 @@ public class AmqpPublisher implements Runnable {
 		mIfMapPublisherId = ifMapPublisherId;
 		CBORFactory fac = new CBORFactory();
 		mObjMapper = new ObjectMapper(fac);
+
 		try {
 			mAmqpChannel = connection.createChannel();
 		} catch (IOException e) {
@@ -136,13 +137,14 @@ public class AmqpPublisher implements Runnable {
 		Set<Vulnerability> outDated = mCache.indicateOutDated(taskId,
 				vulnerabilities);
 		updateCache(taskId, news, outDated);
-
+		
 		try {
-			BasicProperties props = new BasicProperties.Builder()
-					.contentType("application/cbor")
-					.build();
+			
+			final BasicProperties.Builder properties = new BasicProperties.Builder().contentType("application/cbor");
+			BasicProperties props = properties.build();
+			
+			for (Vulnerability vul : news) {				
 
-			for (Vulnerability vul : news) {
 				IronvasEvent event = new IronvasEvent(vul.getId(),
 						vul.getTimestamp().getTime(),
 						vul.getSubnet(),
@@ -160,7 +162,6 @@ public class AmqpPublisher implements Runnable {
 						true);
 
 				byte[] eventData = mObjMapper.writeValueAsBytes(event);
-
 				mAmqpChannel.basicPublish(mExhangeName, "", props, eventData);
 			}
 

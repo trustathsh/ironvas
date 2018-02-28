@@ -79,7 +79,7 @@ public class AmqpSubscriber {
 	private final String mDefaultConfigName;
 	private Config mDefaultOpenVASTaskConfig = null;
 
-	private final Map<String, Config> mConfigCache = new HashMap<>();
+	private final Map<String, Config> mConfigCache = new HashMap<String, Config>();
 	private final ObjectMapper mObjMapper;
 
 	private static final Logger LOGGER = Logger.getLogger(VulnerabilityHandler.class.getName());
@@ -264,7 +264,7 @@ public class AmqpSubscriber {
 	 * @return Map<Task Name,Task>
 	 */
 	private Map<String, Task> getTaskList() {
-		Map<String, Task> result = new HashMap<>();
+		Map<String, Task> result = new HashMap<String, Task>();
 
 		Seq<Task> taskList = mOmp.getTasks()._2();
 		Iterator<Task> taskIterator = taskList.toIterator();
