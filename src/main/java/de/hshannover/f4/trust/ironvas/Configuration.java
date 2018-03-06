@@ -109,6 +109,7 @@ public final class Configuration {
 	private static final String AMQP_PUBLISH_PORT = "amqp.publish.server.port";
 	private static final String AMQP_PUBLISH_SERVER_VIRTUALHOST = "amqp.publish.server.virtualhost";
 	private static final String AMQP_PUBLISH_EXCHANGE_NAME = "amqp.publish.exchange.name";
+
 	private static final String AMQP_PUBLISH_USER_NAME = "amqp.publish.user.name";
 	private static final String AMQP_PUBLISH_USER_PASSWORD = "amqp.publish.user.password";
 	
@@ -120,6 +121,8 @@ public final class Configuration {
 	private static final String AMQP_SUBSCRIBE_USER_PASSWORD = "amqp.subscribe.user.password";
 	private static final String AMQP_SUBSCRIBE_QUEUE_NAME = "amqp.subscribe.queue.name";
 	private static final String AMQP_SUBSCRIBE_QUEUE_DURABLE = "amqp.subscribe.queue.durable";
+	private static final String AMQP_SUBSCRIBE_EXCHANGE_ROUTINGKEY = "amqp.subscribe.exchange.routingkey";
+	private static final String AMQP_SUBSCRIBE_EXCHANGE_NAME = "amqp.subscribe.exchange.name";
 
 	private static final String AMQP_SHARE_PUBLISH_CONNECTION = "amqp.share_publish_connection";
 	private static final String AMQP_SUBSCRIBE_DEFAULT_CONFIG_NAME = "amqp.subscriber.defaultconfig";
@@ -327,6 +330,14 @@ public final class Configuration {
 		return get(AMQP_SUBSCRIBE_QUEUE_NAME);
 	}
 	
+	public static String amqpSubscribeRoutingKey() {
+		return get(AMQP_SUBSCRIBE_EXCHANGE_ROUTINGKEY);
+	}
+	
+	public static String amqpSubscribeExchangeName() {
+		return get(AMQP_SUBSCRIBE_EXCHANGE_NAME);
+	}
+		
 	public static boolean amqpSharePublishConnection() {
 		return get(AMQP_SHARE_PUBLISH_CONNECTION).equals("true");
 	}

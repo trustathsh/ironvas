@@ -75,6 +75,8 @@ public class AmqpSubscriber {
 	private final OmpConnection mOmp;
 	private Channel mAmqpChannel;
 	private final String mQueueName;
+	private final String mExchangeName;
+	private final String mRoutingKey;
 	private final boolean mDurable;
 	private final String mDefaultConfigName;
 	private Config mDefaultOpenVASTaskConfig = null;
@@ -93,13 +95,17 @@ public class AmqpSubscriber {
 	 *            Connection to the AMQP Server
 	 * @param queueName
 	 *            name of the amqp queue that will be used.
+	 * @param exchangeName
+	 *            name of the amqp exchange to bind with.
+	 * @param routingKey
+	 *            name of the amqp routingKey for permitted data.
 	 * @param durable
 	 *            true of the queue should be durable
 	 * @param defaultConfigName
 	 *            name of the default configuration that will be used. The default configuration will be used as a
 	 *            fallback. If a configuration with this name can't be found, the AMQP Subscriber will shut down.
 	 */
-	public AmqpSubscriber(OmpConnection mOmp, Connection connection, String queueName, boolean durable,
+	public AmqpSubscriber(OmpConnection mOmp, Connection connection, String queueName,String exchangeName,String routingKey, boolean durable,
 			String defaultConfigName) {
 		LOGGER.info("Created AmqpSubscriber");
 		this.mOmp = mOmp;
@@ -107,6 +113,9 @@ public class AmqpSubscriber {
 		this.mQueueName = queueName;
 		this.mDefaultConfigName = defaultConfigName;
 		this.mDurable = durable;
+		this.mRoutingKey = routingKey;
+		this.mExchangeName = exchangeName;
+		
 		CBORFactory fac = new CBORFactory();
 		mObjMapper = new ObjectMapper(fac);
 
@@ -120,6 +129,7 @@ public class AmqpSubscriber {
 		try {
 			mAmqpChannel = mAmqpConnection.createChannel();
 			mAmqpChannel.queueDeclare(mQueueName, mDurable, false, false, null);
+			mAmqpChannel.queueBind(mQueueName, mExchangeName, mRoutingKey);
 			mAmqpChannel.basicConsume(mQueueName, false, getDefaultConsumer());
 		} catch (IOException e) {
 			e.printStackTrace();

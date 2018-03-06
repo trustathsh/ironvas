@@ -130,7 +130,10 @@ public class Ironvas implements Runnable {
 			}
 
 			// TODO: Shutdown hook für internen AMQP Thread notwendig?
-			mAmqpSubscriber = new AmqpSubscriber(mOmp, mAmqpSubscribeConnection, Configuration.amqpSubscribeQueueName(),
+			mAmqpSubscriber = new AmqpSubscriber(mOmp, mAmqpSubscribeConnection, 
+					Configuration.amqpSubscribeQueueName(),
+					Configuration.amqpSubscribeExchangeName(),
+					Configuration.amqpSubscribeRoutingKey(),
 					Configuration.amqpSubscribeDurable(),
 					Configuration.amqpSubscribeDefaultConfigName());
 		}
