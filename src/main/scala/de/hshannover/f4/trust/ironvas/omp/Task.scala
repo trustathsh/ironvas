@@ -41,4 +41,6 @@ package de.hshannover.f4.trust.ironvas.omp
 case class Task(
   id: String,
   name: String,
+  status: String,
   lastReportId: String)
+

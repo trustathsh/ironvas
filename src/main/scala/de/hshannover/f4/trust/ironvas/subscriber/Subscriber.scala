@@ -172,7 +172,7 @@ class Subscriber(
         val (_, taskId) = omp.createTask(taskName, config.id, targetId)
 
         cache += ip.getValue() ->
-          Target(targetId, targetName, ip.getValue(), List(Task(taskId, taskName, "")))
+          Target(targetId, targetName, ip.getValue(), List(Task(taskId, taskName, "", "")))
 
         omp.startTask(taskId)
       }

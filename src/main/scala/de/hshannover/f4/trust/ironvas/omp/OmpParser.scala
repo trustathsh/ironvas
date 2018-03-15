@@ -114,8 +114,9 @@ class OmpParser {
 
       id = (task \ "@id").text
       name = (task \ "name").text
+      taskStatus = (task \ "status").text
       lastReportId = (task \ "last_report" \ "report" \ "@id").text
-    } yield Task(id, name, lastReportId)
+    } yield Task(id, name, taskStatus,lastReportId)
 
     (statusCode, tasks)
   }
@@ -242,7 +243,7 @@ class OmpParser {
         task <- (target \ "tasks" \ "task")
         id = (task \ "@id").text
         name = (task \ "name").text
-      } yield Task(id, name, "")
+      } yield Task(id, name, "","")
 
     } yield Target(id, name, hosts, tasks)
 

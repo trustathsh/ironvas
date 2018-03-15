@@ -39,9 +39,13 @@
 package de.hshannover.f4.trust.ironvas;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
@@ -61,6 +65,7 @@ import de.hshannover.f4.trust.ironvas.omp.OmpConnection;
 import de.hshannover.f4.trust.ironvas.omp.Target;
 import de.hshannover.f4.trust.ironvas.omp.Task;
 import scala.collection.Iterator;
+import scala.collection.JavaConversions;
 import scala.collection.Seq;
 
 /**
@@ -261,10 +266,30 @@ public class AmqpSubscriber {
 		}
 
 		String taskName = getTaskName(event.getInfo());
-
-		String taskID = mOmp.createTask(taskName, config.id(), targetID)._2();
-		String res = mOmp.startTask(taskID)._2();
-		LOGGER.info(res);
+		
+		Seq<Task> ovtasks = mOmp.getTasks()._2();
+		List<Task> ovtasksList  = JavaConversions.seqAsJavaList(ovtasks);
+		Optional<Task> optTask = ovtasksList
+				.stream()
+				.filter(taskElem -> taskElem.name().equals(taskName))
+				.findFirst();
+		
+		String taskID;		
+		if(optTask.isPresent()){
+			taskID = optTask.get().id();
+			if(!optTask.get().status().equals("Requested") && !optTask.get().status().equals("Running")){
+				String res = mOmp.startTask(taskID)._2();
+				LOGGER.info(res);
+			}else{
+				LOGGER.info("Doing Nothing! Scan currently requested or running for this IP");
+			}
+			
+		} else {
+			taskID = mOmp.createTask(taskName, config.id(), targetID)._2();
+			String res = mOmp.startTask(taskID)._2();
+			LOGGER.info(res);
+		}		
+		
 	}
 
 	/**
