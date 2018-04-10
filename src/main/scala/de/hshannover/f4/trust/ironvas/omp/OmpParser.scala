@@ -49,6 +49,7 @@ import de.hshannover.f4.trust.ironvas.Vulnerability
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.text.ParseException
+import java.util.TimeZone
 
 /**
  * <code>OmpParser</code> is capable of parsing the OpenVAS Management Protocol
@@ -77,6 +78,7 @@ class OmpParser {
   val locale = Locale.ENGLISH
   val cDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", locale)
   val parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  parser.setTimeZone(TimeZone.getTimeZone("UTC"))
 
   def getVersionResponse(xml: Elem) = {
     val statusCode = status(xml)
